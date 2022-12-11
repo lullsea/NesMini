@@ -11,8 +11,8 @@ Header (16 bytes)
   0-3: Constant $4E $45 $53 $1A ("NES" followed by MS-DOS end-of-file)
   4: Size of PRG ROM in 16 KB units
   5: Size of CHR ROM in 8 KB units (Value 0 means the board uses CHR RAM)
-  6: Flags 6 - Mapper, mirroring, battery, trainer
-  7: Flags 7 - Mapper, VS/Playchoice, NES 2.0
+  6: Flags 6 - Lower nyble of the mapper, mirroring, battery, trainer
+  7: Flags 7 - Upper nyble of the Mapper, VS/Playchoice, NES 2.0
   8: Flags 8 - PRG-RAM size (rarely used extension)
   9: Flags 9 - TV system (rarely used extension)
   10: Flags 10 - TV system, PRG-RAM presence (unofficial, rarely used extension
@@ -37,9 +37,9 @@ public class RomLoader {
 
     RomLoader(File game) throws Exception {
         byte[] data = Files.readAllBytes(game.toPath());
-        isINES = data[0] == 'N' && data[1] == 'E' && data[2] == 'S' && data[3] == 0x1A;
-        isNES2 = isINES && (data[7] & 0x0C) == 0x08;
-        // Check for valid ines rom
+        // data[0 - 2] == "NES"
+        isINES = data[0] == 0x4e && data[1] == 0x45 && data[2] == 0x53 && data[3] == 0x1a;
+        isNES2 = isINES && (data[7] & 0x0c) == 0x08;
         if (isINES) {
             // Nes 2.0 Format
             if (isNES2) {
@@ -54,26 +54,26 @@ public class RomLoader {
             // Bottom 4 bits denote mapper number
             mapperID = (data[6] >> 4) + ((data[7] >> 4) << 4);
             mapper = Mapper.getMapper(mapperID);
-            rom = new int[(prgCount == 0) ? 16384 : prgCount * 16834]; // 1024 * 16
-            vrom = new int[(chrCount == 0) ? 8192 : chrCount * 8192]; // 1024 * 8
+            rom = new int[(prgCount == 0) ? 0x4000 : prgCount * 0x4000]; // 1024 * 16
+            vrom = new int[(chrCount == 0) ? 0x2000 : chrCount * 0x2000]; // 1024 * 8
             // Skip the header and trainer section
-            int offset = 16 + (trainer ? 512 : 0); 
+            int offset = 16 + (trainer ? 512 : 0);
             // populate rom
             for (int i = 0; i < rom.length; i++) {
                 if (offset + i >= data.length)
                     break;
-                rom[i] = data[offset + i] & 0xFF;
+                rom[i] = data[offset + i] & 0xff;
                 // System.out.println(Integer.toHexString(rom[i]));
             }
-            offset += 16384 * prgCount; // Skip rom section
+            offset += 0x4000 * prgCount; // Skip rom section
             // populate vrom
             for (int i = 0; i < vrom.length; i++) {
                 if (offset + i >= data.length)
                     break;
-                vrom[i] = data[i + offset] & 0xFF;
+                vrom[i] = data[i + offset] & 0xff;
                 // System.out.println(vrom[i]);
             }
-        } else if (data[0] == 'N' && data[1] == 'E' && data[2] == 'S' && data[3] == 'M' && data[4] == 0x1A) {
+        } else if (data[0] == 'N' && data[1] == 'E' && data[2] == 'S' && data[3] == 'M' && data[4] == 0x1a) {
             // Valid nsf file
             // Don't know if im going to deal with this
             System.out.println("Not yet implemented");
@@ -94,7 +94,7 @@ public class RomLoader {
     }
 
     public int readROM(int addr) {
-        return rom[addr & ((prgCount > 1) ? 0x7FFF : 0x3FFF)];
+        return rom[addr & ((prgCount > 1) ? 0x7fff : 0x3fff)];
     }
 
     @Override
