@@ -7,7 +7,12 @@ public class NROM extends Mapper{
 
     @Override
     public int read(int addr) {
-        // TODO Auto-generated method stub
+        addr &= 0xffff;
+        if(addr >= 0x8000 && addr <= 0xffff)
+            return nes.rom.rom[addr & (nes.rom.prgCount > 1 ? 0x7fff : 0x3fff)];
+        if(addr <= 0x2000)
+            return nes.cpu.ram[addr & 0x7ff];
+        System.out.print("ASD");
         return 0;
     }
 
