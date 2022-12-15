@@ -22,10 +22,11 @@ Header (16 bytes)
 public class RomLoader {
     public int prgCount, chrCount;
     public int[] rom, vrom;
-    public boolean trainer, battery, isINES, isNES2;
+    public boolean trainer, battery, isINES, isNES2, isNSF;
     public Mirror mirror = Mirror.UNLOADED;
     public Mapper mapper;
     private int mapperID;
+    private Nes nes;
 
     public enum Mirror {
         UNLOADED,
@@ -35,50 +36,57 @@ public class RomLoader {
         SINGLE
     }
 
-    RomLoader(File game) throws Exception {
+    RomLoader(Nes nes, File game) throws Exception {
+        this.nes = nes;
         byte[] data = Files.readAllBytes(game.toPath());
-        // data[0 - 2] == "NES"
+
+        /* ----------------------- Check for valid file types ----------------------- */
+
+        // data[0 - 3] == "NES?"
         isINES = data[0] == 0x4e && data[1] == 0x45 && data[2] == 0x53 && data[3] == 0x1a;
+
         isNES2 = isINES && (data[7] & 0x0c) == 0x08;
-        if (isINES) {
-            // Nes 2.0 Format
-            if (isNES2) {
-                prgCount = data[4] + ((data[9] & 15) << 8);
-                chrCount = data[5] + ((data[9] >> 4) << 8);
-            } else {
-                prgCount = data[4];
-                chrCount = data[5];
-            }
-            mirror = (data[6] & 8) != 0 ? Mirror.FOUR_SCREEN : (data[6] & 1) != 0 ? Mirror.VERTICAL : Mirror.HORIZONTAL;
-            trainer = (data[6] & 4) != 0;
-            // Bottom 4 bits denote mapper number
-            mapperID = (data[6] >> 4) + ((data[7] >> 4) << 4);
-            mapper = Mapper.getMapper(mapperID);
-            rom = new int[(prgCount == 0) ? 0x4000 : prgCount * 0x4000]; // 1024 * 16
-            vrom = new int[(chrCount == 0) ? 0x2000 : chrCount * 0x2000]; // 1024 * 8
-            // Skip the header and trainer section
-            int offset = 16 + (trainer ? 512 : 0);
-            // populate rom
-            for (int i = 0; i < rom.length; i++) {
-                if (offset + i >= data.length)
-                    break;
-                rom[i] = data[offset + i] & 0xff;
-                // System.out.println(Integer.toHexString(rom[i]));
-            }
-            offset += 0x4000 * prgCount; // Skip rom section
-            // populate vrom
-            for (int i = 0; i < vrom.length; i++) {
-                if (offset + i >= data.length)
-                    break;
-                vrom[i] = data[i + offset] & 0xff;
-                // System.out.println(vrom[i]);
-            }
-        } else if (data[0] == 'N' && data[1] == 'E' && data[2] == 'S' && data[3] == 'M' && data[4] == 0x1a) {
+
+        // data[0 - 4] == "NESM?"
+        isNSF = data[0] == 'N' && data[1] == 'E' && data[2] == 'S' && data[3] == 'M' && data[4] == 0x1a;
+
+        if (isNSF)
             // Valid nsf file
             // Don't know if im going to deal with this
-            System.out.println("Not yet implemented");
-        } else
-            throw new Exception("Invalid file format!");
+            System.out.println("NSF not yet implemented");
+
+        if (!isINES)
+            throw new Exception("Invalid File Format");
+
+        /* --------------------------- Load rom to memory --------------------------- */
+        // Nes 2.0 Format
+        prgCount = isNES2 ? data[4] + ((data[9] & 15) << 8) : data[4];
+        chrCount = isNES2 ? data[5] + ((data[9] >> 4) << 8) : data[5];
+        mirror = (data[6] & 8) != 0 ? Mirror.FOUR_SCREEN : (data[6] & 1) != 0 ? Mirror.VERTICAL : Mirror.HORIZONTAL;
+        trainer = (data[6] & 4) != 0;
+        // Bottom 4 bits denote mapper number
+        mapperID = (data[6] >> 4) + ((data[7] >> 4) << 4);
+        mapper = Mapper.load(mapperID);
+        mapper.nes = this.nes;
+        rom = new int[(prgCount == 0) ? 0x4000 : prgCount * 0x4000]; // 1024 * 16
+        vrom = new int[(chrCount == 0) ? 0x2000 : chrCount * 0x2000]; // 1024 * 8
+        // Skip the header and trainer section
+        int offset = 16 + (trainer ? 512 : 0);
+        // populate rom
+        for (int i = 0; i < rom.length; i++) {
+            if (offset + i >= data.length)
+                break;
+            rom[i] = data[offset + i] & 0xff;
+            // System.out.println(Integer.toHexString(rom[i]));
+        }
+        offset += 0x4000 * prgCount; // Skip rom section
+        // populate vrom
+        for (int i = 0; i < vrom.length; i++) {
+            if (offset + i >= data.length)
+                break;
+            vrom[i] = data[i + offset] & 0xff;
+            // System.out.println(vrom[i]);
+        }
     }
 
     public Mirror getMirror() {

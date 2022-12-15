@@ -1,10 +1,6 @@
 package net.lullsea.NesMini;
 
-import java.io.ObjectInputFilter.Status;
 import java.util.Arrays;
-import java.util.Set;
-
-import javax.swing.plaf.basic.BasicColorChooserUI.PropertyHandler;
 
 enum StatusFlag {
     CARRY(1 << 0),
@@ -60,7 +56,6 @@ public class Cpu {
 
     Cpu(Nes nes) {
         this.nes = nes;
-        reset();
     }
 
     public void reset() {
@@ -180,6 +175,7 @@ public class Cpu {
     }
 
     /* --------------------------------- Cpu I/O -------------------------------- */
+
     public int read(int addr) {
         // $0800 - $1fff: Mirrors of $0000-$07FF
         int val;
@@ -216,7 +212,18 @@ public class Cpu {
         return read(0x100 + ptr);
     }
 
+    // Int to boolean
+    private boolean ib(int a) {
+        return (a != 0);
+    }
+
+    // Boolean to int
+    private int bi(boolean a) {
+        return a ? 1 : 0;
+    }
+
     /* -------------------------- StatusFlag functions -------------------------- */
+
     private void setFlag(StatusFlag flag, boolean b) {
         status = b ? status | flag.bit : status & ~flag.bit;
     }
@@ -229,21 +236,12 @@ public class Cpu {
         return bi(getFlag(flag));
     }
 
-    // Int to boolean
-    private boolean ib(int a) {
-        return (a != 0);
-    }
-
-    // Boolean to int
-    private int bi(boolean a) {
-        return a ? 1 : 0;
-    }
-
     public int getStatus() {
         return status & 0xff;
     }
 
     /* ------------------------------- Interrupts ------------------------------- */
+
     private void irq() {
         // If InterruptDisable flag is false
         if (!getFlag(StatusFlag.INTERRUPT)) {
@@ -374,6 +372,7 @@ public class Cpu {
     }
 
     /* ------------------------------ Instructions ------------------------------ */
+
     private void adc() {
         int j = (a + read(addr) + getFlagBit(StatusFlag.CARRY)) & 0xffff;
 

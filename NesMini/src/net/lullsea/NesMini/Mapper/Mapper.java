@@ -4,7 +4,7 @@ import net.lullsea.NesMini.Nes;
 
 public abstract class Mapper {
 
-    public static Mapper getMapper(int id){
+    public static Mapper load(int id){
         switch(id){
             case 0:
                 return new NROM();
@@ -17,9 +17,12 @@ public abstract class Mapper {
 
     public abstract int read(int addr);
     public abstract void write(int addr, int data);
-    public abstract int reset();
+
+    public abstract int readPpuRegister(int addr);
+    public abstract void writePpuRegister(int addr, int data);
 
     public abstract int readROM(int addr);
     public abstract int readVROM(int addr);
 
+    public abstract int reset();
 }
