@@ -13,13 +13,14 @@ public class Ppu {
     public PPUMASK mask;
 
     // NTSC Palette Table
-    int[] palette = new int[] { 0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840,
+    int[] palette = { 0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840,
             0x002F10, 0x084A08, 0x006700, 0x124200, 0x6D2800, 0x000000, 0x000000, 0x000000, 0xC4D5E7, 0xFF4000,
             0xDC0E22, 0xFF476B, 0xD7009F, 0x680AD7, 0x0019BC, 0x0054B1, 0x006A5B, 0x008C03, 0x00AB00, 0x2C8800,
             0xA47200, 0x000000, 0x000000, 0x000000, 0xF8F8F8, 0xFFAB3C, 0xFF7981, 0xFF5BC5, 0xFF48F2, 0xDF49FF,
             0x476DFF, 0x00B4F7, 0x00E0FF, 0x00E375, 0x03F42B, 0x78B82E, 0xE5E218, 0x787878, 0x000000, 0x000000,
             0xFFFFFF, 0xFFF2BE, 0xF8B8B8, 0xF8B8D8, 0xFFB6FF, 0xFFC3FF, 0xC7D1FF, 0x9ADAFF, 0x88EDF8, 0x83FFDD,
             0xB8F8B8, 0xF5F8AC, 0xFFFFB0, 0xF8D8F8, 0x000000, 0x000000 };
+    int[] paletteTable;
 
     // Tables
     int[][] patternTable; // left: $0 - $fff; right: $1000 - $1fff
@@ -29,12 +30,15 @@ public class Ppu {
 
     public Ppu(Nes nes) {
         this.nes = nes;
+        System.out.println("akjdsaskjdq " + palette.length);
 
         mirror = nes.rom.mirror;
 
         control = new PPUCTRL();
         mask = new PPUMASK();
         status = new PPUSTATUS();
+
+        paletteTable = new int[32];
 
         nametable = new Nametable[4];
         Arrays.fill(nametable, new Nametable());
@@ -84,16 +88,24 @@ public class Ppu {
         } else if (addr <= 0x3fff) {
             // Palette indexes
             addr &= 0x1f;
-            tmp = palette[addr] & (mask.grayscale ? 0x30 : 0x3f);
+            // $3F10,$3F14,$3F18,$3F1C are mirrors of $3F00,$3F04,$3F08,$3F0C
+            switch (addr) {
+                case 0x10 -> addr = 0x0;
+                case 0x14 -> addr = 0x4;
+                case 0x18 -> addr = 0x8;
+                case 0x1c -> addr = 0xc;
+            }
+
+            tmp = paletteTable[addr] & (mask.grayscale ? 0x30 : 0x3f);
         }
         return tmp & 0xff;
     }
 
     public void write(int addr, int data) {
         if (addr <= 0x1fff)
+            // Cannot write to vrom
             return;
         else if (addr <= 0x3eff) {
-            // Nametables
             addr &= 0xfff;
 
             if (addr <= 0x3ff)
@@ -106,22 +118,16 @@ public class Ppu {
                 nametable[arr[3]].set(addr, data);
 
         } else if (addr <= 0x3fff) {
-            // Palettte indexes
             addr &= 0x1f;
-            palette[addr] = data;
+            switch (addr) {
+                case 0x10 -> addr = 0x0;
+                case 0x14 -> addr = 0x4;
+                case 0x18 -> addr = 0x8;
+                case 0x1c -> addr = 0xc;
+            }
+            paletteTable[addr] = data;
         }
     }
-
-    // Int to boolean
-    private boolean ib(int a) {
-        return (a != 0);
-    }
-
-    // Boolean to int
-    private int bi(boolean a) {
-        return a ? 1 : 0;
-    }
-
     /* ------------------------------ PPU Registers ----------------------------- */
 
     // Cpu $2000
@@ -189,19 +195,20 @@ public class Ppu {
 
     // Cpu $2002
     public final class PPUSTATUS {
-        int bus;
         boolean sprOverflow, spr0hit, vblank;
 
         PPUSTATUS() {
-            bus = 0;
             sprOverflow = spr0hit = vblank = false;
         }
 
         public int get() {
-            return bus |
-                    (sprOverflow ? 0x20 : 0) |
+            // The bottom 5 bits are unused
+            // vblank is set to false everytime the register is read
+            int tmp = (sprOverflow ? 0x20 : 0) |
                     (spr0hit ? 0x40 : 0) |
-                    (vblank ? 0x80 : 0);
+                    (!vblank ? 0x80 : 0);
+            vblank = false;
+            return tmp;
         }
     }
 

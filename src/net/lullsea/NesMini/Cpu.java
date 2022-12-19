@@ -90,6 +90,8 @@ public class Cpu {
     public void process() {
         opcode = read(pc++);
 
+        // TODO: Interrupts
+
         mode = (AddressingMode) lookup[opcode][0];
         cycles = (Integer) lookup[opcode][1];
 

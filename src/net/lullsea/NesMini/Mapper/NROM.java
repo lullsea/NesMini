@@ -43,7 +43,8 @@ public class NROM extends Mapper{
             case 0x1:
                 break;
             case 0x2:
-                // TODO: PPU Status
+                // TODO: CHECK AGAIN
+                val = nes.ppu.status.get();
                 break;
             case 0x3:
             // OAM Address is unreadable
