@@ -50,7 +50,7 @@ public class Cpu {
 
     public int cycles;
     private int pc, a, x, y, ptr, status; // Program counter and registers
-    private int opcode;
+    public int opcode;
     private AddressingMode mode;
     private int addr;
 
@@ -87,7 +87,7 @@ public class Cpu {
         cycles = 0;
     }
 
-    public void update() {
+    public void process() {
         opcode = read(pc++);
 
         mode = (AddressingMode) lookup[opcode][0];

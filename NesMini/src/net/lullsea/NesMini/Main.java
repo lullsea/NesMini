@@ -7,8 +7,9 @@ public class Main {
         Nes nes = new Nes();
         nes.load("C:/Users/user/downloads/smb.nes");
         while(true){
-            nes.update();
+            nes.process();
                 System.out.println(nes.cpu.toString());
+                nes.frame.test(0x101010);
                 Thread.sleep(1000);
 
         }

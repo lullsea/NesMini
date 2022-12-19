@@ -14,7 +14,9 @@ public class NesFrame extends JFrame {
         setResizable(false);
         getContentPane().setBackground(new Color(0x76583D));
         setVisible(true);
-
     }
 
+    void test(int x){
+        super.setBackground(new Color(x));
+    }
 }

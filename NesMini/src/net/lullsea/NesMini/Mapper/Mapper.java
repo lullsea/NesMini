@@ -15,12 +15,15 @@ public abstract class Mapper {
 
     public Nes nes;
 
+    // Cpu read and write
     public abstract int read(int addr);
     public abstract void write(int addr, int data);
 
+    // PPU Registers ($2000 - $2007) read and write
     public abstract int readPpuRegister(int addr);
     public abstract void writePpuRegister(int addr, int data);
-
+    
+    // ROM read and write
     public abstract int readROM(int addr);
     public abstract int readVROM(int addr);
 

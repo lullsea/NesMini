@@ -2,6 +2,8 @@ package net.lullsea.NesMini;
 
 import java.util.Arrays;
 
+import net.lullsea.NesMini.RomLoader.Mirror;
+
 public class Ppu {
     Nes nes;
 
@@ -22,9 +24,13 @@ public class Ppu {
     // Tables
     int[][] patternTable; // left: $0 - $fff; right: $1000 - $1fff
     Nametable[] nametable;
+    int[] arr;
+    Mirror mirror;
 
     public Ppu(Nes nes) {
         this.nes = nes;
+
+        mirror = nes.rom.mirror;
 
         control = new PPUCTRL();
         mask = new PPUMASK();
@@ -33,27 +39,77 @@ public class Ppu {
         nametable = new Nametable[4];
         Arrays.fill(nametable, new Nametable());
 
-        // 
+        // Nametable mirroring
+        switch (mirror) {
+            case HORIZONTAL -> arr = new int[] { 0, 0, 1, 1 };
+            case VERTICAL -> arr = new int[] { 0, 1, 0, 1 };
+            case SINGLE -> arr = new int[] { 0, 0, 0, 0 };
+            case FOUR_SCREEN -> arr = new int[] { 1, 2, 3, 4 };
+            case UNLOADED -> {
+                break;
+            }
+        }
+
         patternTable = new int[2][4096];
     }
 
     public void reset() {
     }
 
+    public void process() {
+    }
+
     /* --------------------------------- Ppu I/O -------------------------------- */
 
     public int read(int addr) {
+        int tmp = 0;
         addr &= 0x3fff;
+        // $0 - $1fff, Video ROM / Pattern Table
         if (addr <= 0x1fff)
-            return nes.mapper.readVROM(addr);
-        else if (addr <= 0x3fff)
-            // TODO
-            return 0;
-        return 0;
+            tmp = nes.mapper.readVROM(addr);
+        else if (addr <= 0x3eff) {
+            // Nametables: $2000 - $2fff
+            // Mirrored: $3000 - $3eff
+            addr &= 0xfff;
+
+            if (addr <= 0x3ff)
+                tmp = nametable[arr[0]].get(addr);
+            else if (addr <= 0x7ff)
+                tmp = nametable[arr[1]].get(addr);
+            else if (addr <= 0xbff)
+                tmp = nametable[arr[2]].get(addr);
+            else if (addr <= 0xfff)
+                tmp = nametable[arr[3]].get(addr);
+
+        } else if (addr <= 0x3fff) {
+            // Palette indexes
+            addr &= 0x1f;
+            tmp = palette[addr] & (mask.grayscale ? 0x30 : 0x3f);
+        }
+        return tmp & 0xff;
     }
 
-    public void write() {
+    public void write(int addr, int data) {
+        if (addr <= 0x1fff)
+            return;
+        else if (addr <= 0x3eff) {
+            // Nametables
+            addr &= 0xfff;
 
+            if (addr <= 0x3ff)
+                nametable[arr[0]].set(addr, data);
+            else if (addr <= 0x7ff)
+                nametable[arr[1]].set(addr, data);
+            else if (addr <= 0xbff)
+                nametable[arr[2]].set(addr, data);
+            else if (addr <= 0xfff)
+                nametable[arr[3]].set(addr, data);
+
+        } else if (addr <= 0x3fff) {
+            // Palettte indexes
+            addr &= 0x1f;
+            palette[addr] = data;
+        }
     }
 
     // Int to boolean
@@ -149,27 +205,35 @@ public class Ppu {
         }
     }
 
-}
+    public final class Nametable {
+        // Used for debugging
+        private static int id = 0;
+        String name;
+        int[] tile;
+        int[] attribute;
 
-class Nametable {
-    // Used for debugging
-    private static int id = 0;
-    String name;
-    int[] tile;
-    int[] attribute;
+        // ===== 1024 byte area of memory ===== //
+        Nametable() {
+            // 30 rows of 32 tiles
+            tile = new int[30 * 32];
+            // 64-byte array at the end of each nametable
+            attribute = new int[64];
 
-    // ===== 1024 byte area of memory ===== //
-    Nametable() {
-        // 30 rows of 32 tiles
-        tile = new int[30 * 32];
-        // 64-byte array at the end of each nametable
-        attribute = new int[64];
+            Arrays.fill(tile, 0);
+            Arrays.fill(attribute, 0);
 
-        Arrays.fill(tile, 0);
-        Arrays.fill(attribute, 0);
+            name = "Nametable" + id++;
+        }
 
-        name = "Nametable" + id;
-        id += 1;
+        public int get(int addr) {
+            return addr < tile.length ? tile[addr] : attribute[addr - tile.length];
+        }
+
+        public void set(int addr, int data) {
+            if (addr < tile.length)
+                tile[addr] = data;
+            else
+                attribute[addr - tile.length] = data;
+        }
     }
-
 }

@@ -10,13 +10,15 @@ public class Nes {
     public Mapper mapper;
     public Cpu cpu;
     public Ppu ppu;
+    public NesFrame frame;
 
     public Nes() {
-
+        frame = new NesFrame();
+        
     }
 
-    public void update() {
-        cpu.update();
+    public void process() {
+        cpu.process();
     }
 
     public void load(String filePath) throws Exception {

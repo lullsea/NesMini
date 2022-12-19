@@ -1,0 +1,29 @@
+[33mcommit 7163649520f0331b1296564d96af1de2c863b651[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: lullsea <lullseapoint@gmail.com>
+Date:   Fri Dec 16 02:23:48 2022 +0800
+
+    Implemented basic PPU registers
+
+[33mcommit 816174d335dbd820f15d83468844c08d12f17d0b[m
+Author: lullsea <lullseapoint@gmail.com>
+Date:   Wed Dec 14 04:16:51 2022 +0800
+
+    Implemented 6502 Unofficial Opcodes
+
+[33mcommit 88e0f8105dd1c00589db2f759cb77826a447e3f9[m
+Author: lullsea <lullseapoint@gmail.com>
+Date:   Mon Dec 12 02:40:43 2022 +0800
+
+    Outline basic cpu functions and bus communications
+
+[33mcommit b6ec37ef489a0cbd07f419e7b29477760623c252[m
+Author: lullsea <lullseapoint@gmail.com>
+Date:   Sun Dec 11 03:14:41 2022 +0800
+
+    Implemented loading from ROM to data
+
+[33mcommit b161e8e10395fad6448971e2836d818976f2ef87[m
+Author: lullsea <lullseapoint@gmail.com>
+Date:   Fri Dec 9 18:28:00 2022 +0800
+
+    First Commit
