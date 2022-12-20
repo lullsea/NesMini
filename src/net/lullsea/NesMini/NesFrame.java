@@ -5,7 +5,7 @@ import java.awt.*;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 
 public class NesFrame extends JFrame {
     Graphics graphic = new Graphics();
@@ -17,6 +17,7 @@ public class NesFrame extends JFrame {
         setLayout(null);
         setResizable(false);
         getContentPane().setBackground(new Color(0x505050));
+        
         add(graphic);
         setVisible(true);
     }

@@ -5,59 +5,32 @@ import java.awt.*;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
-
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 
 public class Debugger extends JFrame{
-    PatternGraphics left, right;
+    Canvas left, right, pal;
     Debugger(){
         super("Debug");
         
-        left = new PatternGraphics(25, 30);
-        right = new PatternGraphics(25, 400);
+        left = new Canvas(50, 25, 350, 350, 128, 128);
+        right = new Canvas(420, 25, 350, 350, 128, 128 );
 
-        setSize(420, 815);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(null);
-        setResizable(false);
-        getContentPane().setBackground(new Color(0x802525));
+        pal = new Canvas(50, 380, 720, 100, 16, 4);
 
         add(left);
         add(right);
+        add(pal);
+
+        setSize(800, 560);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(null);
+        // setResizable(false);
+        getContentPane().setBackground(new Color(0x802525));
 
         setVisible(true);
 
 
     }
 
-    public class PatternGraphics extends JPanel {
-        private int FPS;
-
-        // Graphics
-        private final BufferedImage image;
-
-        PatternGraphics(int x, int y) {
-            super();
-            setVisible(true);
-            setBounds(x, y, 350, 350);
-            setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            image = new BufferedImage(128, 128, BufferedImage.TYPE_INT_RGB);
-        }
-
-        public void Draw(int[] rgbArray) {
-            image.setRGB(0, 0, 128, 128, rgbArray, 0, 128);
-            repaint();
-        }
-
-        @Override
-        protected void paintComponent(java.awt.Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2D = (Graphics2D) g;
-            g2D.drawImage(image, 0, 0, 400, 400, null);
-            g2D.setColor(Color.WHITE);
-
-        }
-    }
 }
+

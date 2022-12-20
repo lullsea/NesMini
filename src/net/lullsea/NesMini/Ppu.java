@@ -97,7 +97,7 @@ public class Ppu {
                         int point = (low & 0x1) + (high & 0x1);
                         low >>= 1;
                         high >>= 1;
-                        tmp[index][(x * 8 + (7 - j)) + (((y * 8) + i) * 128)] = palette[pal << 2 | point];
+                        tmp[index][(x * 8 + (7 - j)) + (((y * 8) + i) * 128)] = palette[(pal << 2) + point];
                     }
                 }
             }

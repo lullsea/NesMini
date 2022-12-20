@@ -11,12 +11,12 @@ public class Nes {
     public Cpu cpu;
     public Ppu ppu;
     // public NesFrame frame;
-    public Debugger frame;
+    public Debugger debug;
+    public NesFrame frame;
 
     public Nes() {
-        // frame = new NesFrame();
-        frame = new Debugger();
-        
+        frame = new NesFrame();
+        debug = new Debugger();
     }
 
     public void process() {
@@ -35,6 +35,11 @@ public class Nes {
     public void startup(){
         cpu.reset();
         ppu.reset();
+
+        // Debugging
+        debug.left.draw(ppu.current[0]);
+        debug.right.draw(ppu.current[1]);
+        debug.pal.draw(ppu.palette);
     }
 
 }
