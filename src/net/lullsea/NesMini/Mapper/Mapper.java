@@ -5,12 +5,13 @@ import net.lullsea.NesMini.Nes;
 public abstract class Mapper {
 
     public static Mapper load(int id){
-        switch(id){
-            case 0:
-                return new NROM();
-            default:
-                return null;
-        }
+        // switch(id){
+        //     case 0:
+        //         return new NROM();
+        //     default:
+        //         return null;
+        // }
+        return new NROM();
     }
 
     public Nes nes;

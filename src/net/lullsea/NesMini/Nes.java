@@ -10,10 +10,12 @@ public class Nes {
     public Mapper mapper;
     public Cpu cpu;
     public Ppu ppu;
-    public NesFrame frame;
+    // public NesFrame frame;
+    public Debugger frame;
 
     public Nes() {
-        frame = new NesFrame();
+        // frame = new NesFrame();
+        frame = new Debugger();
         
     }
 

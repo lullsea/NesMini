@@ -6,11 +6,11 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Nes nes = new Nes();
         nes.load("C:/Users/user/downloads/smb.nes");
+        nes.frame.left.Draw(nes.ppu.current[0]);
+        nes.frame.right.Draw(nes.ppu.current[1]);
         while(true){
-            nes.process();
-                System.out.println(nes.cpu.toString());
-                nes.frame.test(0x101010);
-                Thread.sleep(1000);
+        nes.process();
+        Thread.sleep(1000);
 
         }
     }

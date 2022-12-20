@@ -1,41 +1,39 @@
 package net.lullsea.NesMini.Mapper;
 
-public class NROM extends Mapper{
+public class NROM extends Mapper {
 
-    public NROM(){
+    public NROM() {
     }
 
     @Override
     public int read(int addr) {
         addr &= 0xffff;
-        if(addr <= 0x1fff)
-        // 6502 2kb internal memory
-            readROM(addr);
-        else if(addr >= 0x2000 && addr <= 0x3fff)
-        // PPU register mirrored to $3fff
+        if (addr <= 0x1fff)
+            // 6502 2kb internal memory
+            return nes.cpu.ram[addr & 0x7ff];
+        else if (addr >= 0x2000 && addr <= 0x3fff)
+            // PPU register mirrored to $3fff
             return readPpuRegister(addr);
-        else if(addr >= 0x8000 && addr <= 0xffff)
-        // Program ROM / Game Logic
-            return nes.rom.rom[addr & (nes.rom.prgCount > 1 ? 0x7fff : 0x3fff)];
-        System.out.print("ASD");
+        else if (addr >= 0x8000 && addr <= 0xffff)
+            // Program ROM / Game Logic
+            return readROM(addr);
         return 0;
     }
 
     @Override
     public void write(int addr, int data) {
         data &= 0xff;
-        if(addr <= 0x1fff)
+        if (addr <= 0x1fff)
             nes.cpu.ram[addr] = data;
-        else if(addr >= 0x2000 && addr <= 0x3fff)
+        else if (addr >= 0x2000 && addr <= 0x3fff)
             writePpuRegister(addr, data);
-        
     }
 
     @Override
-    public int readPpuRegister(int addr){
+    public int readPpuRegister(int addr) {
         addr &= 0x7;
         int val = 0;
-        switch(addr){
+        switch (addr) {
             // Control is unreadable
             case 0x0:
                 break;
@@ -47,16 +45,16 @@ public class NROM extends Mapper{
                 val = nes.ppu.status.get();
                 break;
             case 0x3:
-            // OAM Address is unreadable
+                // OAM Address is unreadable
                 break;
             case 0x4:
                 // TODO: OAM Data
                 break;
             case 0x5:
-            // Scroll is unreadable
+                // Scroll is unreadable
                 break;
             case 0x6:
-            // PPU Address is unreadable
+                // PPU Address is unreadable
                 break;
             case 0x7:
                 // TODO: PPU Data
@@ -70,7 +68,7 @@ public class NROM extends Mapper{
     public void writePpuRegister(int addr, int data) {
         addr &= 0x7;
         data &= 0xff;
-        switch(addr){
+        switch (addr) {
             case 0x0:
                 nes.ppu.control.set(data);
                 break;
@@ -102,17 +100,16 @@ public class NROM extends Mapper{
 
     @Override
     public int readROM(int addr) {
-        return nes.cpu.ram[addr & 0x7ff];
+        return nes.rom.rom[addr & (nes.rom.prgCount > 1 ? 0x7fff : 0x3fff)];
     }
 
     @Override
     public int readVROM(int addr) {
-        // TODO Auto-generated method stub
-        return 0;
+        return nes.rom.vrom[addr & 0x1fff];
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "NROM";
     }
 }

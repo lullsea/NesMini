@@ -13,24 +13,29 @@ public class Ppu {
     public PPUMASK mask;
 
     // NTSC Palette Table
-    int[] palette = { 0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840,
-            0x002F10, 0x084A08, 0x006700, 0x124200, 0x6D2800, 0x000000, 0x000000, 0x000000, 0xC4D5E7, 0xFF4000,
-            0xDC0E22, 0xFF476B, 0xD7009F, 0x680AD7, 0x0019BC, 0x0054B1, 0x006A5B, 0x008C03, 0x00AB00, 0x2C8800,
-            0xA47200, 0x000000, 0x000000, 0x000000, 0xF8F8F8, 0xFFAB3C, 0xFF7981, 0xFF5BC5, 0xFF48F2, 0xDF49FF,
-            0x476DFF, 0x00B4F7, 0x00E0FF, 0x00E375, 0x03F42B, 0x78B82E, 0xE5E218, 0x787878, 0x000000, 0x000000,
-            0xFFFFFF, 0xFFF2BE, 0xF8B8B8, 0xF8B8D8, 0xFFB6FF, 0xFFC3FF, 0xC7D1FF, 0x9ADAFF, 0x88EDF8, 0x83FFDD,
-            0xB8F8B8, 0xF5F8AC, 0xFFFFB0, 0xF8D8F8, 0x000000, 0x000000 };
+    int[] palette = {
+            0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840, 0x002F10, 0x084A08,
+            0x006700,
+            0x124200, 0x6D2800, 0x000000, 0x000000, 0x000000, 0xC4D5E7, 0xFF4000, 0xDC0E22, 0xFF476B, 0xD7009F,
+            0x680AD7,
+            0x0019BC, 0x0054B1, 0x006A5B, 0x008C03, 0x00AB00, 0x2C8800, 0xA47200, 0x000000, 0x000000, 0x000000,
+            0xF8F8F8,
+            0xFFAB3C, 0xFF7981, 0xFF5BC5, 0xFF48F2, 0xDF49FF, 0x476DFF, 0x00B4F7, 0x00E0FF, 0x00E375, 0x03F42B,
+            0x78B82E,
+            0xE5E218, 0x787878, 0x000000, 0x000000, 0xFFFFFF, 0xFFF2BE, 0xF8B8B8, 0xF8B8D8, 0xFFB6FF, 0xFFC3FF,
+            0xC7D1FF,
+            0x9ADAFF, 0x88EDF8, 0x83FFDD, 0xB8F8B8, 0xF5F8AC, 0xFFFFB0, 0xF8D8F8, 0x000000, 0x000000 };
     int[] paletteTable;
 
-    // Tables
-    int[][] patternTable; // left: $0 - $fff; right: $1000 - $1fff
+    // left: $0 - $fff; right: $1000 - $1fff
+    // left
+    int[][] patternTable;
     Nametable[] nametable;
     int[] arr;
     Mirror mirror;
 
     public Ppu(Nes nes) {
         this.nes = nes;
-        System.out.println("akjdsaskjdq " + palette.length);
 
         mirror = nes.rom.mirror;
 
@@ -55,12 +60,49 @@ public class Ppu {
         }
 
         patternTable = new int[2][4096];
-    }
-
-    public void reset() {
+        current = new int[2][128*128];
     }
 
     public void process() {
+    }
+
+    /* ---------------------------------- debug --------------------------------- */
+
+    public void reset() {
+        current[0] = _updateSpritePatternTable(0, 4);
+        current[1] = _updateSpritePatternTable(1, 4);
+    }
+
+    int[][] current;
+
+    private int[] _updateSpritePatternTable(int index, int pal) {
+        // The pattern table is divided into two 256-tile sections 16x16
+        // Each tile in the pattern table is 16 bytes which are separated to left and
+        // right planes
+        // Each plane is 8x8 bits
+        // The first plane controls bit 0 of the color.
+        // the second plane controls bit 1. Any pixel whose color is 0 is
+        // background/transparent
+        int[][] tmp = new int[2][0x4000];
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                // X here represents a tile and Y represents the 256-tile section
+                int offset = y * 256 + x * 16;
+                for (int i = 0; i < 8; i++) {
+                    // Get the first plane
+                    int low = read((index * 0x1000) + i + offset);
+                    // Get the second plane
+                    int high = read((index * 0x1000) + i + offset + 8);
+                    for (int j = 0; j < 8; j++) {
+                        int point = (low & 0x1) + (high & 0x1);
+                        low >>= 1;
+                        high >>= 1;
+                        tmp[index][(x * 8 + (7 - j)) + (((y * 8) + i) * 128)] = palette[pal << 2 | point];
+                    }
+                }
+            }
+        }
+        return tmp[index];
     }
 
     /* --------------------------------- Ppu I/O -------------------------------- */
@@ -68,6 +110,7 @@ public class Ppu {
     public int read(int addr) {
         int tmp = 0;
         addr &= 0x3fff;
+
         // $0 - $1fff, Video ROM / Pattern Table
         if (addr <= 0x1fff)
             tmp = nes.mapper.readVROM(addr);
@@ -98,10 +141,14 @@ public class Ppu {
 
             tmp = paletteTable[addr] & (mask.grayscale ? 0x30 : 0x3f);
         }
+        // System.out.println("addr: " + "$" + Integer.toHexString(addr) + " val: " +
+        // "$" + Integer.toHexString(tmp));
         return tmp & 0xff;
     }
 
     public void write(int addr, int data) {
+        addr &= 0x3fff;
+        data &= 0xff;
         if (addr <= 0x1fff)
             // Cannot write to vrom
             return;
@@ -225,9 +272,6 @@ public class Ppu {
             tile = new int[30 * 32];
             // 64-byte array at the end of each nametable
             attribute = new int[64];
-
-            Arrays.fill(tile, 0);
-            Arrays.fill(attribute, 0);
 
             name = "Nametable" + id++;
         }

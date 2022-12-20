@@ -67,7 +67,6 @@ public class Cpu {
 
         // Internal memory
         ram = new int[0x2000];
-        Arrays.fill(ram, 0);
 
         /*
          * TODO:
@@ -341,9 +340,7 @@ public class Cpu {
             case 0xc8 -> iny();
             case 0x4c, 0x6c -> jmp();
             case 0x20 -> jsr();
-
             case 0xa1, 0xa5, 0xa9, 0xad, 0xb1, 0xb5, 0xb9, 0xbd -> lda();
-
             case 0xa2, 0xa6, 0xae, 0xb6, 0xbe -> ldx();
             case 0xa0, 0xa4, 0xac, 0xb4, 0xbc -> ldy();
             case 0x46, 0x4a, 0x4e, 0x56, 0x5e -> lsr();
@@ -738,6 +735,7 @@ public class Cpu {
     private void nop() {
         return;
     }
+
     @Override
     public String toString() {
         return "-CPU: " + '\n' +
