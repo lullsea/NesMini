@@ -5,6 +5,8 @@ import java.awt.*;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+
 import java.awt.image.BufferedImage;
 
 public class Debugger extends JFrame{
@@ -21,8 +23,8 @@ public class Debugger extends JFrame{
         add(right);
         add(pal);
 
-        setSize(800, 560);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(840, 560);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLayout(null);
         // setResizable(false);
         getContentPane().setBackground(new Color(0x802525));

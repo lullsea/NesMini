@@ -10,7 +10,7 @@ public class Nes {
     public Mapper mapper;
     public Cpu cpu;
     public Ppu ppu;
-    // public NesFrame frame;
+
     public Debugger debug;
     public NesFrame frame;
 
@@ -19,8 +19,12 @@ public class Nes {
         debug = new Debugger();
     }
 
-    public void process() {
-        cpu.process();
+    public void process() throws Exception {
+        // cpu.process();
+        for(int i = 0; i < 256 * 240; i++)
+        ppu.process();
+        Thread.sleep(100);
+        frame.graphic.draw(ppu.frame);
     }
 
     public void load(String filePath) throws Exception {
@@ -36,9 +40,10 @@ public class Nes {
         cpu.reset();
         ppu.reset();
 
+
         // Debugging
-        debug.left.draw(ppu.current[0]);
-        debug.right.draw(ppu.current[1]);
+        debug.left.draw(ppu._current[0]);
+        debug.right.draw(ppu.   _current[1]);
         debug.pal.draw(ppu.palette);
     }
 

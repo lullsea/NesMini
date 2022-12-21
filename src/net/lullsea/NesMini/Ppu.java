@@ -28,11 +28,23 @@ public class Ppu {
     int[] paletteTable;
 
     // left: $0 - $fff; right: $1000 - $1fff
-    // left
     int[][] patternTable;
     Nametable[] nametable;
     int[] arr;
     Mirror mirror;
+
+    // Rendering Variables
+    int cycles, scanline;
+
+    // Background
+    public AddressRegister vramAddr, tramAddr;
+    public boolean firstwrite;
+    public int fineX; //Scrolling
+    int patternLow, patternHigh, paletteLow, paletteHigh;
+
+    // Sprite
+
+    int[] frame; // Rendered image
 
     public Ppu(Nes nes) {
         this.nes = nes;
@@ -46,7 +58,9 @@ public class Ppu {
         paletteTable = new int[32];
 
         nametable = new Nametable[4];
-        Arrays.fill(nametable, new Nametable());
+        // Arrays.fill(nametable, new Nametable());
+        for (int i = 0; i < 4; i++)
+            nametable[i] = new Nametable();
 
         // Nametable mirroring
         switch (mirror) {
@@ -60,22 +74,55 @@ public class Ppu {
         }
 
         patternTable = new int[2][4096];
-        current = new int[2][128*128];
+        _current = new int[2][128 * 128];
+
+        frame = new int[256 * 240];
+        cycles = 1;
+        scanline = 0;
     }
 
     public void process() {
+        frame[(cycles - 1) + (scanline * 256)] = palette[(int) (Math.random() * 0x3F)];
+
+        cycles++;
+        if (cycles > 256) {
+            cycles = 1;
+            scanline++;
+            if (scanline > 239)
+                scanline = 0;
+        }
+
+        /* ------- Background evaluation ------- */
+        // TODO
+        if ((cycles >= 0 && cycles <= 256) || (cycles >= 321 && cycles <= 336)) {
+            // Each memory access takes 2 PPU cycles to complete
+            switch (cycles % 8) {
+                case 0:
+                    // The data for the first two tiles is loaded into the shift registers
+                    break;
+                case 2:
+                    // Fetch the corresponding attribute table entry from $23C0-$2FFF and increment
+                    // the current VRAM address within the same row.
+                    // Loads the next attribute to register
+                    read(nametable[vramAddr.select].getAttr(
+                            ((vramAddr.coarseY << 1) & 0b111000) |
+                            (vramAddr.coarseX & 0b000111)));
+
+                    break;
+            }
+        }
     }
 
     /* ---------------------------------- debug --------------------------------- */
 
     public void reset() {
-        current[0] = _updateSpritePatternTable(0, 4);
-        current[1] = _updateSpritePatternTable(1, 4);
+        _current[0] = _updateSpritesheet(0, 4);
+        _current[1] = _updateSpritesheet(1, 4);
     }
 
-    int[][] current;
+    int[][] _current;
 
-    private int[] _updateSpritePatternTable(int index, int pal) {
+    private int[] _updateSpritesheet(int index, int pal) {
         // The pattern table is divided into two 256-tile sections 16x16
         // Each tile in the pattern table is 16 bytes which are separated to left and
         // right planes
@@ -179,15 +226,15 @@ public class Ppu {
 
     // Cpu $2000
     public final class PPUCTRL {
-        boolean x, y, increment, spritePtr, backgroundPtr, sprSize, slave, nmi;
+        int select;
+        boolean increment, spritePtr, backgroundPtr, sprSize, slave, nmi;
 
         PPUCTRL() {
             set(0);
         }
 
         public int get() {
-            return (x ? 0x1 : 0) |
-                    (y ? 0x2 : 0) |
+            return select |
                     (increment ? 0x4 : 0) |
                     (spritePtr ? 0x8 : 0) |
                     (backgroundPtr ? 0x10 : 0) |
@@ -197,8 +244,7 @@ public class Ppu {
         }
 
         public void set(int data) {
-            x = (data & 0x1) > 0;
-            y = (data & 0x2) > 0;
+            select = data & 0x3;
             increment = (data & 0x4) > 0;
             spritePtr = (data & 0x8) > 0;
             backgroundPtr = (data & 0x10) > 0;
@@ -254,17 +300,43 @@ public class Ppu {
             int tmp = (sprOverflow ? 0x20 : 0) |
                     (spr0hit ? 0x40 : 0) |
                     (!vblank ? 0x80 : 0);
+
             vblank = false;
+            firstwrite = false;
+
             return tmp;
         }
     }
 
-    public final class Nametable {
+    public final class AddressRegister {
+        public int coarseX, coarseY, select, fineY;
+
+        AddressRegister() {
+            set(0);
+        }
+
+        public void set(int data) {
+            data &= 0x3fff;
+            coarseX = (data & 0b11111);
+            coarseY = (data & 0b1111100000) >> 5;
+            select = (data & 0b110000000000) >> 10;
+            fineY = (data & 0b111000000000000) >> 12;
+        }
+
+        public int get() {
+            return (coarseX |
+                    (coarseY << 5) |
+                    (select << 10) |
+                    (fineY << 12));
+        }
+    }
+
+    private final class Nametable {
         // Used for debugging
         private static int id = 0;
         String name;
-        int[] tile;
-        int[] attribute;
+        private int[] tile;
+        private int[] attribute;
 
         // ===== 1024 byte area of memory ===== //
         Nametable() {
@@ -273,14 +345,21 @@ public class Ppu {
             // 64-byte array at the end of each nametable
             attribute = new int[64];
 
-            name = "Nametable" + id++;
+            name = "Nametable" + id;
+            id += 1;
         }
 
         public int get(int addr) {
+            addr &= 0x3ff;
             return addr < tile.length ? tile[addr] : attribute[addr - tile.length];
         }
 
+        public int getAttr(int offset) {
+            return get(0x3c0 | offset);
+        }
+
         public void set(int addr, int data) {
+            addr &= 0x3ff;
             if (addr < tile.length)
                 tile[addr] = data;
             else
