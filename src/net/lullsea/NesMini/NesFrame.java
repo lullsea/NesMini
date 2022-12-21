@@ -4,7 +4,6 @@ import java.awt.*;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
 import java.awt.image.BufferedImage;
 
 public class NesFrame extends JFrame {
@@ -13,13 +12,14 @@ public class NesFrame extends JFrame {
     NesFrame() {
         super("Nes Mini - by Lull");
 
-        graphic = new Canvas(15,50, 256 * 3, 240 * 3, 256, 240);
+        graphic = new Canvas(20,50, 256 * 3, 240 * 3, 256, 240);
 
-        setSize(820, 940);
+        setLocation(1920 / 3, 100);
+        setSize(825, 940);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(null);
         setResizable(false);
-        getContentPane().setBackground(new Color(0x505050));
+        getContentPane().setBackground(new Color(0x051061));
 
         
         add(graphic);

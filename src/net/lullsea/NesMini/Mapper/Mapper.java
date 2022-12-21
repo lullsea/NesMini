@@ -27,6 +27,4 @@ public abstract class Mapper {
     // ROM read and write
     public abstract int readROM(int addr);
     public abstract int readVROM(int addr);
-
-    public abstract int reset();
 }

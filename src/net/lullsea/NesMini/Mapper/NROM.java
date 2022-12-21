@@ -43,6 +43,8 @@ public class NROM extends Mapper {
             case 0x2:
                 // TODO: CHECK AGAIN
                 val = nes.ppu.status.get();
+                // firstwrite: <- 0
+                nes.ppu.firstwrite = false;
                 break;
             case 0x3:
                 // OAM Address is unreadable
@@ -79,12 +81,12 @@ public class NROM extends Mapper {
                 break;
             // PPU Status is unwritable
             case 0x2:
-                // w: <- 0
-                nes.ppu.firstwrite = false;
                 break;
             case 0x3:
+                // TODO
                 break;
             case 0x4:
+                // TODO
                 break;
             case 0x5:
                 // This register is written to twice
@@ -127,12 +129,6 @@ public class NROM extends Mapper {
                 break;
 
         }
-    }
-
-    @Override
-    public int reset() {
-        // TODO Auto-generated method stub
-        return 0;
     }
 
     @Override

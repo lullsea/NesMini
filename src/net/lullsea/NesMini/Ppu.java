@@ -13,18 +13,7 @@ public class Ppu {
     public PPUMASK mask;
 
     // NTSC Palette Table
-    int[] palette = {
-            0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840, 0x002F10, 0x084A08,
-            0x006700,
-            0x124200, 0x6D2800, 0x000000, 0x000000, 0x000000, 0xC4D5E7, 0xFF4000, 0xDC0E22, 0xFF476B, 0xD7009F,
-            0x680AD7,
-            0x0019BC, 0x0054B1, 0x006A5B, 0x008C03, 0x00AB00, 0x2C8800, 0xA47200, 0x000000, 0x000000, 0x000000,
-            0xF8F8F8,
-            0xFFAB3C, 0xFF7981, 0xFF5BC5, 0xFF48F2, 0xDF49FF, 0x476DFF, 0x00B4F7, 0x00E0FF, 0x00E375, 0x03F42B,
-            0x78B82E,
-            0xE5E218, 0x787878, 0x000000, 0x000000, 0xFFFFFF, 0xFFF2BE, 0xF8B8B8, 0xF8B8D8, 0xFFB6FF, 0xFFC3FF,
-            0xC7D1FF,
-            0x9ADAFF, 0x88EDF8, 0x83FFDD, 0xB8F8B8, 0xF5F8AC, 0xFFFFB0, 0xF8D8F8, 0x000000, 0x000000 };
+    int[] palette = { 0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840, 0x002F10, 0x084A08, 0x006700, 0x124200, 0x6D2800, 0x000000, 0x000000, 0x000000, 0xC4D5E7, 0xFF4000, 0xDC0E22, 0xFF476B, 0xD7009F, 0x680AD7, 0x0019BC, 0x0054B1, 0x006A5B, 0x008C03, 0x00AB00, 0x2C8800, 0xA47200, 0x000000, 0x000000, 0x000000, 0xF8F8F8, 0xFFAB3C, 0xFF7981, 0xFF5BC5, 0xFF48F2, 0xDF49FF, 0x476DFF, 0x00B4F7, 0x00E0FF, 0x00E375, 0x03F42B, 0x78B82E, 0xE5E218, 0x787878, 0x000000, 0x000000, 0xFFFFFF, 0xFFF2BE, 0xF8B8B8, 0xF8B8D8, 0xFFB6FF, 0xFFC3FF, 0xC7D1FF, 0x9ADAFF, 0x88EDF8, 0x83FFDD, 0xB8F8B8, 0xF5F8AC, 0xFFFFB0, 0xF8D8F8, 0x000000, 0x000000 };
     int[] paletteTable;
 
     // left: $0 - $fff; right: $1000 - $1fff
@@ -39,7 +28,7 @@ public class Ppu {
     // Background
     public AddressRegister vramAddr, tramAddr;
     public boolean firstwrite;
-    public int fineX; //Scrolling
+    public int fineX; // Scrolling
     int patternLow, patternHigh, paletteLow, paletteHigh;
 
     // Sprite
@@ -49,18 +38,17 @@ public class Ppu {
     public Ppu(Nes nes) {
         this.nes = nes;
 
-        mirror = nes.rom.mirror;
-
         control = new PPUCTRL();
         mask = new PPUMASK();
         status = new PPUSTATUS();
 
         paletteTable = new int[32];
-
         nametable = new Nametable[4];
         // Arrays.fill(nametable, new Nametable());
         for (int i = 0; i < 4; i++)
             nametable[i] = new Nametable();
+
+        mirror = nes.rom.mirror;
 
         // Nametable mirroring
         switch (mirror) {
@@ -79,6 +67,8 @@ public class Ppu {
         frame = new int[256 * 240];
         cycles = 1;
         scanline = 0;
+
+        vramAddr = tramAddr = new AddressRegister();
     }
 
     public void process() {
@@ -106,7 +96,7 @@ public class Ppu {
                     // Loads the next attribute to register
                     read(nametable[vramAddr.select].getAttr(
                             ((vramAddr.coarseY << 1) & 0b111000) |
-                            (vramAddr.coarseX & 0b000111)));
+                                    (vramAddr.coarseX & 0b000111)));
 
                     break;
             }
@@ -116,13 +106,13 @@ public class Ppu {
     /* ---------------------------------- debug --------------------------------- */
 
     public void reset() {
-        _current[0] = _updateSpritesheet(0, 4);
-        _current[1] = _updateSpritesheet(1, 4);
+        _updateSpritesheet(0, 4);
+        _updateSpritesheet(1, 4);
     }
 
     int[][] _current;
 
-    private int[] _updateSpritesheet(int index, int pal) {
+    private void _updateSpritesheet(int index, int pal) {
         // The pattern table is divided into two 256-tile sections 16x16
         // Each tile in the pattern table is 16 bytes which are separated to left and
         // right planes
@@ -130,7 +120,6 @@ public class Ppu {
         // The first plane controls bit 0 of the color.
         // the second plane controls bit 1. Any pixel whose color is 0 is
         // background/transparent
-        int[][] tmp = new int[2][0x4000];
         for (int y = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
                 // X here represents a tile and Y represents the 256-tile section
@@ -144,12 +133,11 @@ public class Ppu {
                         int point = (low & 0x1) + (high & 0x1);
                         low >>= 1;
                         high >>= 1;
-                        tmp[index][(x * 8 + (7 - j)) + (((y * 8) + i) * 128)] = palette[(pal << 2) + point];
+                        _current[index][(x * 8 + (7 - j)) + (((y * 8) + i) * 128)] = palette[(pal << 2) + point];
                     }
                 }
             }
         }
-        return tmp[index];
     }
 
     /* --------------------------------- Ppu I/O -------------------------------- */
@@ -302,8 +290,6 @@ public class Ppu {
                     (!vblank ? 0x80 : 0);
 
             vblank = false;
-            firstwrite = false;
-
             return tmp;
         }
     }
@@ -317,10 +303,10 @@ public class Ppu {
 
         public void set(int data) {
             data &= 0x3fff;
-            coarseX = (data & 0b11111);
-            coarseY = (data & 0b1111100000) >> 5;
-            select = (data & 0b110000000000) >> 10;
-            fineY = (data & 0b111000000000000) >> 12;
+            coarseX = (data & 0x1f);
+            coarseY = (data & 0x3e0) >> 5;
+            select = (data & 0xc00) >> 10;
+            fineY = (data & 0x7000) >> 12;
         }
 
         public int get() {
@@ -328,6 +314,31 @@ public class Ppu {
                     (coarseY << 5) |
                     (select << 10) |
                     (fineY << 12));
+        }
+
+        public void increment(boolean isHorizontal) {
+            if (isHorizontal) {
+                if (vramAddr.coarseX == 31) {
+                    vramAddr.coarseX = 0;
+                    vramAddr.select ^= 1; // Switch horizontal nametable
+                    return;
+                } else
+                    vramAddr.coarseX += 1;
+            } else {
+                if (vramAddr.fineY < 7)
+                    vramAddr.fineY += 1;
+                else {
+                    vramAddr.fineY = 0;
+                    if (vramAddr.coarseY == 29) {
+                        vramAddr.coarseY = 0;
+                        vramAddr.select ^= 0x2;
+                    } else if (vramAddr.coarseY == 31)
+                        vramAddr.coarseY = 0;
+                    else
+                        vramAddr.coarseY += 1;
+                }
+                // vramAddr.set((vramAddr.get() & ~0x3E0) | (vramAddr.coarseY << 5));
+            }
         }
     }
 
