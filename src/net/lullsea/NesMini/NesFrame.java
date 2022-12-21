@@ -12,14 +12,14 @@ public class NesFrame extends JFrame {
     NesFrame() {
         super("Nes Mini - by Lull");
 
-        graphic = new Canvas(20,50, 256 * 3, 240 * 3, 256, 240);
+        graphic = new Canvas(0,0, 256 * 3, 240 * 3, 256, 240);
 
         setLocation(1920 / 3, 100);
-        setSize(825, 940);
+        setSize(256 * 3, 240 * 3);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(null);
         setResizable(false);
-        getContentPane().setBackground(new Color(0x051061));
+        getContentPane().setBackground(Color.black);
 
         
         add(graphic);

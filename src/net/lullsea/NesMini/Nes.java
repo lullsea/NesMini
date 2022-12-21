@@ -15,16 +15,15 @@ public class Nes {
     public NesFrame frame;
 
     public Nes() {
-        debug = new Debugger(0);
         frame = new NesFrame();
-        debug.setVisible(true);
     }
 
     public void process() throws Exception {
-        // cpu.process();
+        cpu.process();
         for (int i = 0; i < 256 * 240; i++)
             ppu.process();
         Thread.sleep(30);
+        debug.update();
         frame.graphic.draw(ppu.frame);
     }
 
@@ -42,11 +41,7 @@ public class Nes {
         ppu.reset();
 
         // Debugging
-        if (debug.pal != null) {
-            debug.left.draw(ppu._current[0]);
-            debug.right.draw(ppu._current[1]);
-            debug.pal.draw(ppu.paletteTable);
-        }
+        debug = new Debugger(this, 1);
     }
 
 }
