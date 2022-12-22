@@ -60,6 +60,7 @@ public class NROM extends Mapper {
                 break;
             case 0x7:
                 // TODO: PPU Data
+                val = 123;
                 break;
 
         }

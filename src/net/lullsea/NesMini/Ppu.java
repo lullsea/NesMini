@@ -13,7 +13,13 @@ public class Ppu {
     public PPUMASK mask;
 
     // NTSC Palette Table
-    int[] palette = { 0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840, 0x002F10, 0x084A08, 0x006700, 0x124200, 0x6D2800, 0x000000, 0x000000, 0x000000, 0xC4D5E7, 0xFF4000, 0xDC0E22, 0xFF476B, 0xD7009F, 0x680AD7, 0x0019BC, 0x0054B1, 0x006A5B, 0x008C03, 0x00AB00, 0x2C8800, 0xA47200, 0x000000, 0x000000, 0x000000, 0xF8F8F8, 0xFFAB3C, 0xFF7981, 0xFF5BC5, 0xFF48F2, 0xDF49FF, 0x476DFF, 0x00B4F7, 0x00E0FF, 0x00E375, 0x03F42B, 0x78B82E, 0xE5E218, 0x787878, 0x000000, 0x000000, 0xFFFFFF, 0xFFF2BE, 0xF8B8B8, 0xF8B8D8, 0xFFB6FF, 0xFFC3FF, 0xC7D1FF, 0x9ADAFF, 0x88EDF8, 0x83FFDD, 0xB8F8B8, 0xF5F8AC, 0xFFFFB0, 0xF8D8F8, 0x000000, 0x000000 };
+    int[] palette = { 0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840, 0x002F10,
+            0x084A08, 0x006700, 0x124200, 0x6D2800, 0x000000, 0x000000, 0x000000, 0xC4D5E7, 0xFF4000, 0xDC0E22,
+            0xFF476B, 0xD7009F, 0x680AD7, 0x0019BC, 0x0054B1, 0x006A5B, 0x008C03, 0x00AB00, 0x2C8800, 0xA47200,
+            0x000000, 0x000000, 0x000000, 0xF8F8F8, 0xFFAB3C, 0xFF7981, 0xFF5BC5, 0xFF48F2, 0xDF49FF, 0x476DFF,
+            0x00B4F7, 0x00E0FF, 0x00E375, 0x03F42B, 0x78B82E, 0xE5E218, 0x787878, 0x000000, 0x000000, 0xFFFFFF,
+            0xFFF2BE, 0xF8B8B8, 0xF8B8D8, 0xFFB6FF, 0xFFC3FF, 0xC7D1FF, 0x9ADAFF, 0x88EDF8, 0x83FFDD, 0xB8F8B8,
+            0xF5F8AC, 0xFFFFB0, 0xF8D8F8, 0x000000, 0x000000 };
     int[] paletteTable;
 
     // left: $0 - $fff; right: $1000 - $1fff
@@ -32,6 +38,10 @@ public class Ppu {
     int patternLow, patternHigh, paletteLow, paletteHigh;
 
     // Sprite
+
+    // Debugging
+    public int[][] _current;
+    public String _debug;
 
     int[] frame; // Rendered image
 
@@ -62,13 +72,14 @@ public class Ppu {
         }
 
         patternTable = new int[2][4096];
-        _current = new int[2][128 * 128];
 
         frame = new int[256 * 240];
         cycles = 1;
         scanline = 0;
 
         vramAddr = tramAddr = new AddressRegister();
+
+        _current = new int[2][128 * 128];
     }
 
     public void process() {
@@ -103,14 +114,10 @@ public class Ppu {
         }
     }
 
-    /* ---------------------------------- debug --------------------------------- */
-
     public void reset() {
         _updateSpritesheet(0, 4);
         _updateSpritesheet(1, 4);
     }
-
-    int[][] _current;
 
     private void _updateSpritesheet(int index, int pal) {
         // The pattern table is divided into two 256-tile sections 16x16
@@ -178,6 +185,8 @@ public class Ppu {
         }
         // System.out.println("addr: " + "$" + Integer.toHexString(addr) + " val: " +
         // "$" + Integer.toHexString(tmp));
+
+        // _createLog(addr, tmp, true);
         return tmp & 0xff;
     }
 
@@ -209,6 +218,8 @@ public class Ppu {
             }
             paletteTable[addr] = data;
         }
+        _createLog(addr, data, false);
+
     }
     /* ------------------------------ PPU Registers ----------------------------- */
 
@@ -375,6 +386,22 @@ public class Ppu {
                 tile[addr] = data;
             else
                 attribute[addr - tile.length] = data;
+        }
+    }
+
+    // Debugging
+    private void _createLog(int addr, int data, Boolean isRead) {
+        // Only if the memory viewer is active
+        if (nes.debug != null && nes.debug.tool == 1) {
+            String _addr = Integer.toHexString(addr);
+            String _val = Integer.toHexString(data);
+            String symbol = isRead ? "-)" : "(-";
+            String color = isRead ? "green" : "red";
+            if (_addr.length() < 4)
+                _addr = "0".repeat(4 - _addr.length()) + _addr;
+            if (_val.length() < 2)
+                _val = "0" + _val;
+            _debug = "<font color=" + color + ">$" + _addr + " " + symbol + " " + "0x" + _val + "</font>\n";
         }
     }
 }

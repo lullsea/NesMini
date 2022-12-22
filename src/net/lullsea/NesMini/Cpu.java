@@ -54,6 +54,8 @@ public class Cpu {
     private AddressingMode mode;
     private int addr;
 
+    public String _debug;
+
     Cpu(Nes nes) {
         this.nes = nes;
     }
@@ -186,6 +188,7 @@ public class Cpu {
         else
             val = nes.mapper.read(addr);
 
+        _createLog(addr, val, true);
         return val & 0xff;
     }
 
@@ -199,6 +202,8 @@ public class Cpu {
             ram[addr & 0x7ff] = data;
         else
             nes.mapper.write(addr, data);
+
+        _createLog(addr, data, false);
     }
 
     // Stack implemented using a 256-byte array whose location is hardcoded at page
@@ -291,22 +296,102 @@ public class Cpu {
     /* ------------------ Addressing Modes, Cycles and opcodes ------------------ */
 
     final Object[][] lookup = {
-            { AddressingMode.IMMEDIATE, 7 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 }, { AddressingMode.IMPLIED, 6 },
-            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 }, { AddressingMode.IMPLIED, 7 },
-            { AddressingMode.ABSOLUTE, 6 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 }, { AddressingMode.IMPLIED, 6 },
-            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 }, { AddressingMode.IMPLIED, 7 },
-            { AddressingMode.IMPLIED, 6 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE, 3 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 }, { AddressingMode.IMPLIED, 6 },
-            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 }, { AddressingMode.IMPLIED, 7 },
-            { AddressingMode.IMPLIED, 6 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.INDIRECT, 5 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 }, { AddressingMode.IMPLIED, 6 },
-            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 }, { AddressingMode.IMPLIED, 7 },
-            { AddressingMode.IMPLIED, 2 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.IMPLIED, 4 },
-            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_Y, 4 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE_Y, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.ABSOLUTE_X, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 5 },
-            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.IMPLIED, 4 },
-            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_Y, 4 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 4 },
-            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 }, { AddressingMode.IMPLIED, 6 },
-            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 }, { AddressingMode.IMPLIED, 7 },
-            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 }, { AddressingMode.IMPLIED, 6 },
-            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 }, { AddressingMode.IMPLIED, 7 }
+            { AddressingMode.IMMEDIATE, 7 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.ZERO_PAGE, 3 },
+            { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 3 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 },
+            { AddressingMode.IMPLIED, 6 },
+            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 },
+            { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 },
+            { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.ABSOLUTE, 6 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 },
+            { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 4 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 },
+            { AddressingMode.IMPLIED, 6 },
+            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 },
+            { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 },
+            { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMPLIED, 6 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.ZERO_PAGE, 3 },
+            { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 3 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE, 3 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 },
+            { AddressingMode.IMPLIED, 6 },
+            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 },
+            { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 },
+            { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMPLIED, 6 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.ZERO_PAGE, 3 },
+            { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 4 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.INDIRECT, 5 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 },
+            { AddressingMode.IMPLIED, 6 },
+            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 },
+            { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 },
+            { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMPLIED, 2 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 6 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 },
+            { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 },
+            { AddressingMode.IMPLIED, 4 },
+            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 6 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 4 },
+            { AddressingMode.ZERO_PAGE_Y, 4 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE_Y, 5 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 5 },
+            { AddressingMode.IMPLIED, 5 }, { AddressingMode.ABSOLUTE_X, 5 }, { AddressingMode.IMPLIED, 5 },
+            { AddressingMode.IMPLIED, 5 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMMEDIATE, 2 },
+            { AddressingMode.IMPLIED, 6 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 },
+            { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 },
+            { AddressingMode.IMPLIED, 4 },
+            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 5 }, { AddressingMode.ZERO_PAGE_X, 4 }, { AddressingMode.ZERO_PAGE_X, 4 },
+            { AddressingMode.ZERO_PAGE_Y, 4 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 4 },
+            { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_Y, 4 },
+            { AddressingMode.IMPLIED, 4 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 },
+            { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 },
+            { AddressingMode.IMPLIED, 6 },
+            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 },
+            { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 },
+            { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.ZERO_PAGE, 3 }, { AddressingMode.ZERO_PAGE, 3 },
+            { AddressingMode.ZERO_PAGE, 5 }, { AddressingMode.IMPLIED, 5 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMMEDIATE, 2 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 4 }, { AddressingMode.ABSOLUTE, 6 },
+            { AddressingMode.IMPLIED, 6 },
+            { AddressingMode.RELATIVE, 2 }, { AddressingMode.INDIRECT_INDEXED, 5 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 4 }, { AddressingMode.ZERO_PAGE_X, 4 },
+            { AddressingMode.ZERO_PAGE_X, 6 }, { AddressingMode.IMPLIED, 6 }, { AddressingMode.IMPLIED, 2 },
+            { AddressingMode.ABSOLUTE_Y, 4 }, { AddressingMode.IMPLIED, 2 }, { AddressingMode.IMPLIED, 7 },
+            { AddressingMode.IMPLIED, 4 }, { AddressingMode.ABSOLUTE_X, 4 }, { AddressingMode.ABSOLUTE_X, 7 },
+            { AddressingMode.IMPLIED, 7 }
     }; // Typing this out gave me carpal tunnel
 
     private void parseInstruction(int op) {
@@ -740,10 +825,26 @@ public class Cpu {
     public String toString() {
         return "-CPU: " + '\n' +
                 "A:" + (a) + " " + "X:" + (x) + " " + "Y:" + (y) + "\n" +
-                "P:" + Integer.toBinaryString(status) + " " + "PC:$" + Integer.toHexString(pc) + "\n"+
+                "P:" + Integer.toBinaryString(status) + " " + "PC:$" + Integer.toHexString(pc) + "\n" +
                 "S:$" + Integer.toHexString(ptr) + "\n" +
-                 "-INSTRUCTION: " + '\n' +
-                "Op:$" +  Integer.toHexString(opcode) +  "\n" +
+                "-INSTRUCTION: " + '\n' +
+                "Op:$" + Integer.toHexString(opcode) + "\n" +
                 "Mode:" + lookup[opcode][0] + "\n";
+    }
+
+    // Debugging
+    private void _createLog(int addr, int data, Boolean isRead) {
+        // Only if the memory viewer is active
+        if (nes.debug != null && nes.debug.tool == 1) {
+            String _addr = Integer.toHexString(addr);
+            String _val = Integer.toHexString(data);
+            String symbol = isRead ? "-)" : "(-";
+            String color = isRead ? "green" : "red";
+            if (_addr.length() < 4)
+                _addr = "0".repeat(4 - _addr.length()) + _addr;
+            if (_val.length() < 2)
+                _val = "0" + _val;
+            _debug = "<font color=" + color + ">$" + _addr + " " + symbol + " " + "0x" + _val + "</font>\n";
+        }
     }
 }

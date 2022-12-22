@@ -23,7 +23,8 @@ public class Nes {
         for (int i = 0; i < 256 * 240; i++)
             ppu.process();
         Thread.sleep(30);
-        debug.update();
+        if(debug != null)
+            debug.update();
         frame.graphic.draw(ppu.frame);
     }
 
@@ -41,7 +42,8 @@ public class Nes {
         ppu.reset();
 
         // Debugging
-        debug = new Debugger(this, 1);
+        debug = new Debugger(this, 0);
+        Debugger a = new Debugger(this, 0);
     }
 
 }
