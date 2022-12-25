@@ -30,8 +30,7 @@ public class Debugger extends JFrame {
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(null);
-        // setResizable(false);
-        // setResizable(false);
+        setResizable(false);
 
         switch (tool) {
             case 0 -> _pattern();
@@ -44,8 +43,8 @@ public class Debugger extends JFrame {
 
     private void _pattern() {
         int size = 350;
-        Color shadow = new Color(0x602020);
-        setTitle("PPU View");
+        Color shadow = new Color(0x501010);
+        setTitle("PPU Viewer");
 
         getContentPane().setBackground(new Color(0x802525));
 
@@ -98,11 +97,12 @@ public class Debugger extends JFrame {
 
     private void _memory() {
         Font F = new Font(Font.MONOSPACED, Font.PLAIN, 14);
+        setTitle("Memory Viewer");
 
         Color shadow = new Color(0x000030);
         int size = 475;
-        offset = 0x8000;
-        offset2 = 0;
+        offset = 0x0000;
+        offset2 = 0x2000;
 
         console = new StringBuilder();
         console2 = new StringBuilder();
@@ -262,10 +262,10 @@ public class Debugger extends JFrame {
         screen3.setBounds(x + size - 160, y + size - 50, size / 3, size - 205);
         screen3.setBackground(Color.BLACK);
 
-        back4.setBounds(x + size + 80, y + size - 70, size / 3, size - 205);
+        back4.setBounds(size * 2 - x + 15, y + size - 70, size / 3, size - 205);
         back4.setBackground(shadow);
 
-        screen4.setBounds(x + size + 50, y + size - 50, size / 3, size - 205);
+        screen4.setBounds(size * 2 - x - 15, y + size - 50, size / 3, size - 205);
         screen4.setBackground(Color.BLACK);
 
         bar.add(title);
@@ -309,16 +309,16 @@ public class Debugger extends JFrame {
                 if (nes.ppu._debug != null)
                     console2.append(nes.ppu._debug);
 
-                if (counter >= 13) {
+                if (counter > 13) {
                     console = new StringBuilder(console.substring(console.indexOf("\n") + 1).trim() + "\n");
                     console2 = new StringBuilder(console2.substring(console2.indexOf("\n") + 1).trim() + "\n");
                 } else
                     counter++;
 
                 cpuMap = new StringBuilder(
-                        "<font color=red>RAM </font>| <b><font color=yellow>00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F</font></b>");
+                        "<font color=red>MEM </font>| <b><font color=yellow>00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F</font></b>");
                 ppuMap = new StringBuilder(
-                        "<font color=red>VRAM</font>| <b><font color=yellow>00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F</font></b>");
+                        "<font color=red>VMEM</font>| <b><font color=yellow>00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F</font></b>");
                 for (int i = 0; i <= 0xFF; i++) {
                     if (i % 16 == 0) {
                         s = Integer.toHexString(offset + i);
@@ -333,8 +333,12 @@ public class Debugger extends JFrame {
                         ppuMap.append("<b><font color=yellow>" + s + "</font></b>| ");
                     }
                     s = "00";
-                    if (((offset + i) & 0x7) != 2 && (((offset + i) <= 0x1fff) || ((offset + i) >= 0x3fff)))
-                        s = Integer.toHexString(nes.cpu.read(offset + i));
+                    // Special case for PPUSTATUS so to not clear vblank
+                    if((offset + i) >= 0x2000 && (offset + i) <= 0x3fff && ((offset + i) & 0x7) == 2)
+                        s = Integer.toHexString(nes.ppu.status.get());
+                    else
+                    s = Integer.toHexString(nes.cpu.read(offset + i));
+
                     if (s.length() == 1)
                         s = "0" + s;
                     cpuMap.append(s + "\t");
@@ -342,7 +346,6 @@ public class Debugger extends JFrame {
                     if (s.length() == 1)
                         s = "0" + s;
                     ppuMap.append(s + "\t");
-
                 }
                 cpuLabel.setText(format(cpuMap));
                 ppuLabel.setText(format(ppuMap));
@@ -351,6 +354,7 @@ public class Debugger extends JFrame {
             }
 
         }
+
     }
 
     private String format(StringBuilder raw) {

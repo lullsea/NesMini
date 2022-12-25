@@ -43,6 +43,7 @@ public class NROM extends Mapper {
             case 0x2:
                 // TODO: CHECK AGAIN
                 val = nes.ppu.status.get();
+                nes.ppu.status.vblank = false;
                 // firstwrite: <- 0
                 nes.ppu.firstwrite = false;
                 break;
@@ -60,7 +61,6 @@ public class NROM extends Mapper {
                 break;
             case 0x7:
                 // TODO: PPU Data
-                val = 123;
                 break;
 
         }

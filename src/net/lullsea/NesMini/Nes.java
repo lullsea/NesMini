@@ -14,18 +14,19 @@ public class Nes {
     public Debugger debug;
     public NesFrame frame;
 
+    int n;
+
     public Nes() {
-        frame = new NesFrame();
+        frame = new NesFrame(this);
+        n = 0;
     }
 
     public void process() throws Exception {
-        cpu.process();
-        for (int i = 0; i < 256 * 240; i++)
-            ppu.process();
-        Thread.sleep(30);
-        if(debug != null)
-            debug.update();
-        frame.graphic.draw(ppu.frame);
+        ppu.process();
+        if(n % 3 == 0)
+            cpu.process();
+
+        _debug(0, false);
     }
 
     public void load(String filePath) throws Exception {
@@ -40,10 +41,28 @@ public class Nes {
     public void startup() {
         cpu.reset();
         ppu.reset();
+    }
 
-        // Debugging
-        debug = new Debugger(this, 0);
-        Debugger a = new Debugger(this, 0);
+    public void _debug(int tool, boolean create) {
+        // Debugger state machine?
+
+        if (debug != null) {
+            create = create && tool != debug.tool;
+            if (create)
+                debug.dispose();
+            else
+
+                // Process
+                debug.update();
+
+            if (!debug.isDisplayable()) {
+                debug = null;
+                System.gc();
+            }
+        }
+        if (create)
+            debug = new Debugger(this, tool);
+
     }
 
 }

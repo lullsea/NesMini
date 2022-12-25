@@ -35,6 +35,7 @@ public class Ppu {
     public AddressRegister vramAddr, tramAddr;
     public boolean firstwrite;
     public int fineX; // Scrolling
+    ShiftRegister shifter;
     int patternLow, patternHigh, paletteLow, paletteHigh;
 
     // Sprite
@@ -73,6 +74,8 @@ public class Ppu {
 
         patternTable = new int[2][4096];
 
+        shifter = new ShiftRegister();
+
         frame = new int[256 * 240];
         cycles = 1;
         scanline = 0;
@@ -83,40 +86,115 @@ public class Ppu {
     }
 
     public void process() {
-        frame[(cycles - 1) + (scanline * 256)] = palette[(int) (Math.random() * 0x3F)];
+        /* -------------------------- Pre render scanlines -------------------------- */
+        if ((scanline == -1 || scanline == 261) && (cycles >= 280 && cycles <= 304)) {
+            // the vertical scroll bits are reloaded if rendering is enabled.
+            if (mask.background || mask.sprite) {
+                vramAddr.coarseY = tramAddr.fineY;
+                vramAddr.select |= (tramAddr.select & 0b10);
+                vramAddr.fineY = tramAddr.fineY;
+            }
+        }
+
+        /* ---------------------------- Visible scanlines --------------------------- */
+        if (scanline >= 0 && scanline < 240) {
+            // At the beginning of each scanline, the data for the first two tiles is
+            // already loaded into the shift registers
+            // Idle cycle
+            // if(cycles == 0)
+
+            // The data for each tile is fetched during this phase
+            // Every memory access takes 2 cycles to complete
+            if ((cycles >= 1 || cycles <= 256) || (cycles >= 321 && cycles <= 335)) {
+                shifter.update();
+                switch ((cycles - 1) % 8) {
+                    // Nametable byte
+                    case 0:
+                        shifter.load();
+                        shifter.tile = read(0x2000 | (vramAddr.get() & 0x0FFF));
+                        break;
+                    // Attribute byte
+                    case 2:
+                        // 0x23C0 | select | coarseY high 3 bits | coarseX high 3 bits
+                        // shifter.attribute = read(0x23C0 | (vramAddr.get() & 0x0C00) |
+                        // ((vramAddr.get() >> 4) & 0x38) | ((vramAddr.get() >> 2) & 0x07));
+
+                        shifter.attribute = read(nametable[vramAddr.select].getAttr(
+                                            ((vramAddr.coarseY << 1) & 0b111000) |
+                                            (vramAddr.coarseX & 0b000111)));
+
+                        // TODO
+                        shifter.attribute &= 0b11;
+                        break;
+                    // Pattern table tile low
+                    case 4:
+                        // FineY (3) | Bit Plane (1) | Column (4) | Row(4) | CTRL (1) | 0x1fff
+                        shifter.patternLow = read((vramAddr.fineY | (0 << 3) | (shifter.tile << 4)
+                                | ((control.backgroundPtn ? 0x1000 : 0))) & 0x1fff);
+                        break;
+                    // Pattern table tile high
+                    case 6:
+                        // FineY (3) | Bit Plane (1) | Column (4) | Row(4) | CTRL (1) | 0x1fff
+                        shifter.patternHigh = read((vramAddr.fineY | (1 << 3) | (shifter.tile << 4)
+                                | ((control.backgroundPtn ? 0x1000 : 0))) & 0x1fff);
+                        break;
+                    // Increment scroll horizontally every 8 dots
+                    case 7:
+                        if (mask.background || mask.sprite)
+                            vramAddr.increment(true);
+                        break;
+                }
+            }
+
+            // End of visible scanline
+            if (cycles == 256 && mask.background && mask.sprite)
+                vramAddr.increment(false);
+
+            if (cycles >= 257 && cycles <= 320) {
+                // Load the shift registers before transfering
+                shifter.load();
+
+                vramAddr.coarseX = tramAddr.coarseX;
+                vramAddr.select |= (tramAddr.select & 0b01);
+
+            }
+
+        }
+        if(fineX != 0)
+        System.out.println(fineX);
+        int pal = 0, point = 0;
+        if(mask.background){
+            int mux = 0x8000 >> fineX;
+
+            int low = (shifter.patternLow & mux) > 0 ? 1 : 0;
+            int high = (shifter.patternHigh & mux) > 0 ? 2 : 0;
+            point = high | low;
+
+            low = (shifter.attributeLow & mux) > 0 ? 1 : 0;
+            high = (shifter.attributeHigh & mux) > 0 ? 2 : 0;
+            pal = high | low;
+        }
+
+        if (cycles >= 1 && scanline < 240)
+            frame[(cycles - 1) + (scanline * 256)] = palette[(pal << 2) + point];;
+
+
+        // End of the frame
+        if (scanline == 241 && cycles == 1)
+            status.vblank = true;
 
         cycles++;
         if (cycles > 256) {
-            cycles = 1;
-            scanline++;
-            if (scanline > 239)
-                scanline = 0;
-        }
-
-        /* ------- Background evaluation ------- */
-        // TODO
-        if ((cycles >= 0 && cycles <= 256) || (cycles >= 321 && cycles <= 336)) {
-            // Each memory access takes 2 PPU cycles to complete
-            switch (cycles % 8) {
-                case 0:
-                    // The data for the first two tiles is loaded into the shift registers
-                    break;
-                case 2:
-                    // Fetch the corresponding attribute table entry from $23C0-$2FFF and increment
-                    // the current VRAM address within the same row.
-                    // Loads the next attribute to register
-                    read(nametable[vramAddr.select].getAttr(
-                            ((vramAddr.coarseY << 1) & 0b111000) |
-                                    (vramAddr.coarseX & 0b000111)));
-
-                    break;
-            }
+        cycles = 1;
+        scanline++;
+        if (scanline >= 242)
+        scanline = 0;
         }
     }
 
     public void reset() {
-        _updateSpritesheet(0, 4);
-        _updateSpritesheet(1, 4);
+        _updateSpritesheet(0, 1);
+        _updateSpritesheet(1, 1);
     }
 
     private void _updateSpritesheet(int index, int pal) {
@@ -186,7 +264,7 @@ public class Ppu {
         // System.out.println("addr: " + "$" + Integer.toHexString(addr) + " val: " +
         // "$" + Integer.toHexString(tmp));
 
-        // _createLog(addr, tmp, true);
+        _createLog(addr, tmp, true);
         return tmp & 0xff;
     }
 
@@ -226,7 +304,7 @@ public class Ppu {
     // Cpu $2000
     public final class PPUCTRL {
         int select;
-        boolean increment, spritePtr, backgroundPtr, sprSize, slave, nmi;
+        boolean increment, spritePtn, backgroundPtn, sprSize, slave, nmi;
 
         PPUCTRL() {
             set(0);
@@ -235,8 +313,8 @@ public class Ppu {
         public int get() {
             return select |
                     (increment ? 0x4 : 0) |
-                    (spritePtr ? 0x8 : 0) |
-                    (backgroundPtr ? 0x10 : 0) |
+                    (spritePtn ? 0x8 : 0) |
+                    (backgroundPtn ? 0x10 : 0) |
                     (sprSize ? 0x20 : 0) |
                     (slave ? 0x40 : 0) |
                     (nmi ? 0x80 : 0);
@@ -245,8 +323,8 @@ public class Ppu {
         public void set(int data) {
             select = data & 0x3;
             increment = (data & 0x4) > 0;
-            spritePtr = (data & 0x8) > 0;
-            backgroundPtr = (data & 0x10) > 0;
+            spritePtn = (data & 0x8) > 0;
+            backgroundPtn = (data & 0x10) > 0;
             sprSize = (data & 0x20) > 0;
             slave = (data & 0x40) > 0;
             nmi = (data & 0x80) > 0;
@@ -287,20 +365,21 @@ public class Ppu {
 
     // Cpu $2002
     public final class PPUSTATUS {
-        boolean sprOverflow, spr0hit, vblank;
+        int bus;
+        public boolean sprOverflow, spr0hit, vblank;
 
         PPUSTATUS() {
+            bus = 0;
             sprOverflow = spr0hit = vblank = false;
         }
 
         public int get() {
             // The bottom 5 bits are unused
             // vblank is set to false everytime the register is read
-            int tmp = (sprOverflow ? 0x20 : 0) |
+            int tmp = bus |
+                    (sprOverflow ? 0x20 : 0) |
                     (spr0hit ? 0x40 : 0) |
-                    (!vblank ? 0x80 : 0);
-
-            vblank = false;
+                    (vblank ? 0x80 : 0);
             return tmp;
         }
     }
@@ -389,6 +468,50 @@ public class Ppu {
         }
     }
 
+    // Represents the 2 16-bit shift registers and
+    // 2 8-bit shift registers (palette attribute for next tile)
+    private final class ShiftRegister {
+        int attributeLow, attributeHigh, patternLow, patternHigh;
+        int tile, attribute, low, high;
+
+        ShiftRegister() {
+            // 16 bit register
+            this.attributeLow = 0;
+            this.attributeHigh = 0;
+
+            // 16 bit register
+            this.patternLow = 0;
+            this.patternHigh = 0;
+
+            // 8 bit register
+            this.tile = 0;
+            this.attribute = 0;
+            this.low = 0;
+            this.high = 0;
+        }
+
+        public void load() {
+            // Every 8 cycles/shifts, new data is loaded into these registers.
+            patternLow = (patternLow & 0xff00) + (low & 0xff);
+            patternHigh = (patternHigh & 0xff00) + (high & 0xff);
+
+            // The two bits represent the low and high byte of the new attribute (1 = 0xff)
+            attributeLow = (attributeLow & 0xff00) + ((attribute & 0b01) > 0 ? 0xff : 0);
+            attributeHigh = (attributeHigh & 0xff00) + ((attribute & 0b10) > 0 ? 0xff : 0);
+        }
+
+        public void update() {
+            // Background rendering
+            if (mask.background) {
+                patternLow <<= 1;
+                patternHigh <<= 1;
+
+                attributeLow <<= 1;
+                attributeHigh <<= 1;
+            }
+        }
+    }
+
     // Debugging
     private void _createLog(int addr, int data, Boolean isRead) {
         // Only if the memory viewer is active
@@ -396,7 +519,7 @@ public class Ppu {
             String _addr = Integer.toHexString(addr);
             String _val = Integer.toHexString(data);
             String symbol = isRead ? "-)" : "(-";
-            String color = isRead ? "green" : "red";
+            String color = isRead ? "#51c94b" : "red";
             if (_addr.length() < 4)
                 _addr = "0".repeat(4 - _addr.length()) + _addr;
             if (_val.length() < 2)

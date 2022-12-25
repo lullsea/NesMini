@@ -839,7 +839,7 @@ public class Cpu {
             String _addr = Integer.toHexString(addr);
             String _val = Integer.toHexString(data);
             String symbol = isRead ? "-)" : "(-";
-            String color = isRead ? "green" : "red";
+            String color = isRead ? "#51c94b" : "red";
             if (_addr.length() < 4)
                 _addr = "0".repeat(4 - _addr.length()) + _addr;
             if (_val.length() < 2)
