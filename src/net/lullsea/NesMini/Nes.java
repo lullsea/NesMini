@@ -23,9 +23,9 @@ public class Nes {
 
     public void process() throws Exception {
         ppu.process();
-        if(n % 3 == 0)
+        if (n % 3 == 0)
             cpu.process();
-
+        n++;
         _debug(0, false);
     }
 
@@ -47,22 +47,21 @@ public class Nes {
         // Debugger state machine?
 
         if (debug != null) {
-            create = create && tool != debug.tool;
-            if (create)
-                debug.dispose();
-            else
+            // Process
+            debug.update();
+            create = create && (tool != debug.tool);
 
-                // Process
-                debug.update();
-
-            if (!debug.isDisplayable()) {
+            if(create)
+            debug.dispose();
+            
+            if (debug != null && !debug.isDisplayable()) {
                 debug = null;
                 System.gc();
             }
+
         }
         if (create)
-            debug = new Debugger(this, tool);
-
+            this.debug = new Debugger(this, tool);
     }
 
 }

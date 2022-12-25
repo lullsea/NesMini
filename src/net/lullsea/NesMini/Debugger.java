@@ -300,7 +300,12 @@ public class Debugger extends JFrame {
 
     public void update() {
         switch (tool) {
-            case 0 -> pal.draw(nes.ppu.paletteTable);
+            case 0 -> {
+                int tmp[] = new int[32];
+                for(int i = 0; i < 32; i++)
+                    tmp[i] = nes.ppu.palette[nes.ppu.paletteTable[i]];
+                pal.draw(tmp);
+            }
             case 1 -> {
                 String s;
 
@@ -334,8 +339,10 @@ public class Debugger extends JFrame {
                     }
                     s = "00";
                     // Special case for PPUSTATUS so to not clear vblank
-                    if((offset + i) >= 0x2000 && (offset + i) <= 0x3fff && ((offset + i) & 0x7) == 2)
+                    if((offset + i) >= 0x2000 && (offset + i) <= 0x3fff && (((offset + i) & 0x7) == 2 ))
                         s = Integer.toHexString(nes.ppu.status.get());
+                    if((offset + i) >= 0x2000 && (offset + i) <= 0x3fff && (((offset + i) & 0x7) == 7 ))
+                        s = Integer.toHexString(nes.ppu.buffer);
                     else
                     s = Integer.toHexString(nes.cpu.read(offset + i));
 

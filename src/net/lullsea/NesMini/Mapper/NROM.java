@@ -42,7 +42,7 @@ public class NROM extends Mapper {
                 break;
             case 0x2:
                 // TODO: CHECK AGAIN
-                val = nes.ppu.status.get();
+                val = nes.ppu.status.get() | (nes.ppu.buffer & 0x1f);
                 nes.ppu.status.vblank = false;
                 // firstwrite: <- 0
                 nes.ppu.firstwrite = false;
@@ -61,6 +61,9 @@ public class NROM extends Mapper {
                 break;
             case 0x7:
                 // TODO: PPU Data
+                val = nes.ppu.buffer;
+                if(nes.ppu.vramAddr.get() >= 0x3f00) nes.ppu.buffer = nes.ppu.read(nes.ppu.vramAddr.get());
+                nes.ppu.vramAddr.set(nes.ppu.vramAddr.get() + (nes.ppu.control.increment ? 32 : 1));
                 break;
 
         }
@@ -121,6 +124,7 @@ public class NROM extends Mapper {
                     nes.ppu.tramAddr.set((nes.ppu.tramAddr.get() | (data << 8)) & 0x3fff);
                 }
                 nes.ppu.firstwrite = !nes.ppu.firstwrite;
+            System.out.println("asd");
                 break;
             case 0x7:
                 // All writes from this register increments the address

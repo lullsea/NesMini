@@ -56,6 +56,8 @@ public class Cpu {
 
     public String _debug;
 
+    public int requestInterrupt;
+
     Cpu(Nes nes) {
         this.nes = nes;
     }
@@ -86,20 +88,30 @@ public class Cpu {
         pc = readWord(0xfffc);
 
         cycles = 0;
+        requestInterrupt = 0;
     }
 
     public void process() {
-        opcode = read(pc++);
+        switch (requestInterrupt) {
+            case 1 -> irq();
+            case 2 -> nmi();
+        }
+        requestInterrupt = 0;
 
-        // TODO: Interrupts
+        if (cycles == 0) {
+            opcode = read(pc++);
 
-        mode = (AddressingMode) lookup[opcode][0];
-        cycles = (Integer) lookup[opcode][1];
+            // TODO: Interrupts
 
-        // 6th bit of the status flag always set to true
-        setFlag(StatusFlag.UNUSED, true);
-        addr = parseAddressingMode(mode);
-        parseInstruction(opcode);
+            mode = (AddressingMode) lookup[opcode][0];
+            cycles = (Integer) lookup[opcode][1];
+
+            // 6th bit of the status flag always set to true
+            setFlag(StatusFlag.UNUSED, true);
+            addr = parseAddressingMode(mode);
+            parseInstruction(opcode);
+        }
+        cycles--;
     }
 
     public int parseAddressingMode(AddressingMode mode) {
@@ -480,7 +492,7 @@ public class Cpu {
         setFlag(StatusFlag.ZERO, !ib(j & 0xff));
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
 
-        if (lookup[opcode][1] == AddressingMode.IMPLIED || lookup[opcode][0] == AddressingMode.ACCUMULATOR)
+        if (lookup[opcode][0] == AddressingMode.IMPLIED || lookup[opcode][0] == AddressingMode.ACCUMULATOR)
             a = j & 0xff;
         else
             write(addr, j);

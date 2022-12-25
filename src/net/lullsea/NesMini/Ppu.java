@@ -1,7 +1,5 @@
 package net.lullsea.NesMini;
 
-import java.util.Arrays;
-
 import net.lullsea.NesMini.RomLoader.Mirror;
 
 public class Ppu {
@@ -27,6 +25,8 @@ public class Ppu {
     Nametable[] nametable;
     int[] arr;
     Mirror mirror;
+
+    public int buffer;
 
     // Rendering Variables
     int cycles, scanline;
@@ -81,11 +81,20 @@ public class Ppu {
         scanline = 0;
 
         vramAddr = tramAddr = new AddressRegister();
-
         _current = new int[2][128 * 128];
+
+        buffer = 0;
+
     }
 
     public void process() {
+
+        if (scanline == 0 && cycles == 0)
+            cycles = 1;
+
+        if (scanline == -1 && cycles == 1)
+            status.vblank = false;
+
         /* -------------------------- Pre render scanlines -------------------------- */
         if ((scanline == -1 || scanline == 261) && (cycles >= 280 && cycles <= 304)) {
             // the vertical scroll bits are reloaded if rendering is enabled.
@@ -116,20 +125,19 @@ public class Ppu {
                     // Attribute byte
                     case 2:
                         // 0x23C0 | select | coarseY high 3 bits | coarseX high 3 bits
-                        // shifter.attribute = read(0x23C0 | (vramAddr.get() & 0x0C00) |
-                        // ((vramAddr.get() >> 4) & 0x38) | ((vramAddr.get() >> 2) & 0x07));
+                        shifter.attribute = read(0x23C0 | (vramAddr.get() & 0x0C00) |
+                                ((vramAddr.get() >> 4) & 0x38) | ((vramAddr.get() >> 2) & 0x07));
 
-                        shifter.attribute = read(nametable[vramAddr.select].getAttr(
-                                            ((vramAddr.coarseY << 1) & 0b111000) |
-                                            (vramAddr.coarseX & 0b000111)));
-
-                        // TODO
+                        if ((vramAddr.coarseY & 0b10) > 0)
+                            shifter.attribute >>= 4;
+                        if ((vramAddr.coarseX & 0b10) > 0)
+                            shifter.attribute >>= 2;
                         shifter.attribute &= 0b11;
                         break;
                     // Pattern table tile low
                     case 4:
                         // FineY (3) | Bit Plane (1) | Column (4) | Row(4) | CTRL (1) | 0x1fff
-                        shifter.patternLow = read((vramAddr.fineY | (0 << 3) | (shifter.tile << 4)
+                        shifter.patternLow = read((vramAddr.fineY + (0 << 3) | (shifter.tile << 4)
                                 | ((control.backgroundPtn ? 0x1000 : 0))) & 0x1fff);
                         break;
                     // Pattern table tile high
@@ -150,20 +158,23 @@ public class Ppu {
             if (cycles == 256 && mask.background && mask.sprite)
                 vramAddr.increment(false);
 
-            if (cycles >= 257 && cycles <= 320) {
+            if (cycles == 257) {
                 // Load the shift registers before transfering
                 shifter.load();
 
-                vramAddr.coarseX = tramAddr.coarseX;
-                vramAddr.select |= (tramAddr.select & 0b01);
-
+                if (mask.background || mask.sprite) {
+                    vramAddr.coarseX = tramAddr.coarseX;
+                    vramAddr.select |= (tramAddr.select & 0b01);
+                }
             }
 
+            if (cycles == 338 || cycles == 340)
+                shifter.tile = read(0x2000 | (vramAddr.get() & 0xfff));
+
         }
-        if(fineX != 0)
-        System.out.println(fineX);
+
         int pal = 0, point = 0;
-        if(mask.background){
+        if (mask.background) {
             int mux = 0x8000 >> fineX;
 
             int low = (shifter.patternLow & mux) > 0 ? 1 : 0;
@@ -175,20 +186,23 @@ public class Ppu {
             pal = high | low;
         }
 
-        if (cycles >= 1 && scanline < 240)
-            frame[(cycles - 1) + (scanline * 256)] = palette[(pal << 2) + point];;
-
+        if ((cycles >= 1 && cycles <= 256) && (scanline >= 0 && scanline < 240))
+            frame[(cycles - 1) + (scanline * 256)] = palette[paletteTable[(pal << 2) + point]];
 
         // End of the frame
-        if (scanline == 241 && cycles == 1)
+        if (scanline == 241 && cycles == 1) {
             status.vblank = true;
+            if (control.nmi)
+                nes.cpu.requestInterrupt = 2;
+        }
 
         cycles++;
-        if (cycles > 256) {
-        cycles = 1;
-        scanline++;
-        if (scanline >= 242)
-        scanline = 0;
+        if (cycles >= 341) {
+            cycles = 0;
+            scanline++;
+            if (scanline >= 262) {
+                scanline = -1;
+            }
         }
     }
 
@@ -218,7 +232,8 @@ public class Ppu {
                         int point = (low & 0x1) + (high & 0x1);
                         low >>= 1;
                         high >>= 1;
-                        _current[index][(x * 8 + (7 - j)) + (((y * 8) + i) * 128)] = palette[(pal << 2) + point];
+                        _current[index][(x * 8 + (7 - j))
+                                + (((y * 8) + i) * 128)] = palette[read(0x3f00 + (pal << 2) + point)];
                     }
                 }
             }
@@ -304,7 +319,12 @@ public class Ppu {
     // Cpu $2000
     public final class PPUCTRL {
         int select;
-        boolean increment, spritePtn, backgroundPtn, sprSize, slave, nmi;
+        public boolean increment;
+        boolean spritePtn;
+        boolean backgroundPtn;
+        boolean sprSize;
+        boolean slave;
+        boolean nmi;
 
         PPUCTRL() {
             set(0);
@@ -427,7 +447,6 @@ public class Ppu {
                     else
                         vramAddr.coarseY += 1;
                 }
-                // vramAddr.set((vramAddr.get() & ~0x3E0) | (vramAddr.coarseY << 5));
             }
         }
     }
@@ -453,10 +472,6 @@ public class Ppu {
         public int get(int addr) {
             addr &= 0x3ff;
             return addr < tile.length ? tile[addr] : attribute[addr - tile.length];
-        }
-
-        public int getAttr(int offset) {
-            return get(0x3c0 | offset);
         }
 
         public void set(int addr, int data) {

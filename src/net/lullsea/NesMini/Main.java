@@ -10,7 +10,6 @@ public class Main {
 
         for(int i = 0; i < 256 * 240; i++)
             nes.process();
-        Thread.sleep(60);
         nes.frame.graphic.draw(nes.ppu.frame);
 
         }
