@@ -245,7 +245,6 @@ public class Ppu {
 
     public int getColor(int pal, int point){
         return palette[read(0x3f00 + (pal << 2) + point) & 0x3f];
-        // return palette[paletteTable[(pal << 2) + point]];
     }
 
     /* --------------------------------- Ppu I/O -------------------------------- */

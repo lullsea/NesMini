@@ -5,7 +5,7 @@ import java.io.File;
 public class Main {
     public static void main(String[] args) throws Exception {
         Nes nes = new Nes();
-        nes.load("C:/Users/user/downloads/ice.nes");
+        nes.load("C:/Users/user/downloads/dk.nes");
         while (true) {
             while (!nes.ppu.complete)
                 nes.process();
