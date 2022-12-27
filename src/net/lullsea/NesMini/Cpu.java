@@ -101,13 +101,11 @@ public class Cpu {
         if (cycles == 0) {
             opcode = read(pc++);
 
-            // TODO: Interrupts
-
             mode = (AddressingMode) lookup[opcode][0];
             cycles = (Integer) lookup[opcode][1];
 
             // 6th bit of the status flag always set to true
-            setFlag(StatusFlag.UNUSED, true);
+            // setFlag(StatusFlag.UNUSED, true);
             addr = parseAddressingMode(mode);
             parseInstruction(opcode);
         }
@@ -116,18 +114,19 @@ public class Cpu {
 
     public int parseAddressingMode(AddressingMode mode) {
         int addr = 0;
-
         // Increment PC everytime it's read
         // Increment PC twice if it reads a word
         switch (mode) {
             case ZERO_PAGE:
                 addr = read(pc++);
+                addr &= 0xff;
                 break;
             case ABSOLUTE:
                 addr = readWord(pc);
                 pc += 2;
                 break;
             case IMPLIED:
+                // write(addr, a);
                 break;
             case ACCUMULATOR:
                 addr = a;
@@ -154,9 +153,11 @@ public class Cpu {
                 break;
             case ZERO_PAGE_X:
                 addr = read(pc++ + x);
+                addr &= 0xff;
                 break;
             case ZERO_PAGE_Y:
                 addr = read(pc++ + y);
+                addr &= 0xff;
                 break;
             case INDEXED_INDIRECT:
                 addr = read(pc++);
@@ -192,9 +193,8 @@ public class Cpu {
     /* --------------------------------- Cpu I/O -------------------------------- */
 
     public int read(int addr) {
+        int val = 0;
         // $0800 - $1fff: Mirrors of $0000-$07FF
-        int val;
-
         if (addr <= 0x1fff)
             val = ram[addr & 0x7ff];
         else
@@ -487,12 +487,13 @@ public class Cpu {
     }
 
     private void asl() {
+        // TODO
         int j = read(addr) << 1;
-        setFlag(StatusFlag.CARRY, ib(j & 0xff00));
+        setFlag(StatusFlag.CARRY, ib(j & 0xff00));  
         setFlag(StatusFlag.ZERO, !ib(j & 0xff));
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
 
-        if (lookup[opcode][0] == AddressingMode.IMPLIED || lookup[opcode][0] == AddressingMode.ACCUMULATOR)
+        if (lookup[opcode][0] == AddressingMode.IMPLIED)
             a = j & 0xff;
         else
             write(addr, j);
@@ -619,8 +620,8 @@ public class Cpu {
 
     private void dey() {
         y = (y - 1) & 0xff;
-        setFlag(StatusFlag.ZERO, x == 0);
-        setFlag(StatusFlag.NEGATIVE, ib(x & 0x80));
+        setFlag(StatusFlag.ZERO, y == 0);
+        setFlag(StatusFlag.NEGATIVE, ib(y & 0x80));
     }
 
     private void eor() {
@@ -661,19 +662,21 @@ public class Cpu {
     }
 
     private void lda() {
-        a = read(addr) & 0xff;
+        // System.out.println("addr: " + Integer.toHexString(addr) + " data: " + Integer.toHexString(a));
+        a = read(addr);
+
         setFlag(StatusFlag.ZERO, a == 0);
         setFlag(StatusFlag.NEGATIVE, ib(a & 0x80));
     }
 
     private void ldx() {
-        x = read(addr) & 0xff;
+        x = read(addr);
         setFlag(StatusFlag.ZERO, x == 0);
         setFlag(StatusFlag.NEGATIVE, ib(x & 0x80));
     }
 
     private void ldy() {
-        y = read(addr) & 0xff;
+        y = read(addr);
         setFlag(StatusFlag.ZERO, y == 0);
         setFlag(StatusFlag.NEGATIVE, ib(y & 0x80));
     }
@@ -685,7 +688,7 @@ public class Cpu {
         setFlag(StatusFlag.ZERO, !ib(j & 0xff));
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
 
-        if (lookup[opcode][0] == AddressingMode.IMPLIED || lookup[opcode][0] == AddressingMode.ACCUMULATOR)
+        if (lookup[opcode][0] == AddressingMode.IMPLIED)
             a = j & 0xff;
         else
             write(addr, j);
@@ -725,7 +728,7 @@ public class Cpu {
         setFlag(StatusFlag.ZERO, !ib(j & 0xff));
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
 
-        if (lookup[opcode][0] == AddressingMode.IMPLIED || lookup[opcode][0] == AddressingMode.ACCUMULATOR)
+        if (lookup[opcode][0] == AddressingMode.IMPLIED)
             a = j & 0xff;
         else
             write(addr, j);
@@ -737,7 +740,7 @@ public class Cpu {
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
         setFlag(StatusFlag.CARRY, ib(read(addr) & 0x1));
 
-        if (lookup[opcode][0] == AddressingMode.IMPLIED || lookup[opcode][0] == AddressingMode.ACCUMULATOR)
+        if (lookup[opcode][0] == AddressingMode.IMPLIED)
             a = j & 0xff;
         else
             write(addr, j);
@@ -786,6 +789,8 @@ public class Cpu {
     }
 
     private void sta() {
+        
+
         write(addr, a);
     }
 
@@ -830,6 +835,7 @@ public class Cpu {
     }
 
     private void nop() {
+        cycles += 1;
         return;
     }
 

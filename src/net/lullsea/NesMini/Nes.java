@@ -26,6 +26,7 @@ public class Nes {
         if (n % 3 == 0)
             cpu.process();
         n++;
+        // Thread.sleep(100);
         _debug(0, false);
     }
 

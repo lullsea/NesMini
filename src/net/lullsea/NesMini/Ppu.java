@@ -30,6 +30,7 @@ public class Ppu {
 
     // Rendering Variables
     int cycles, scanline;
+    boolean complete;
 
     // Background
     public AddressRegister vramAddr, tramAddr;
@@ -84,16 +85,17 @@ public class Ppu {
         _current = new int[2][128 * 128];
 
         buffer = 0;
+        complete = false;
 
     }
 
     public void process() {
 
-        if (scanline == 0 && cycles == 0)
-            cycles = 1;
-
         if (scanline == -1 && cycles == 1)
             status.vblank = false;
+
+        if (scanline == 0 && cycles == 0)
+            cycles = 1;
 
         /* -------------------------- Pre render scanlines -------------------------- */
         if ((scanline == -1 || scanline == 261) && (cycles >= 280 && cycles <= 304)) {
@@ -187,7 +189,7 @@ public class Ppu {
         }
 
         if ((cycles >= 1 && cycles <= 256) && (scanline >= 0 && scanline < 240))
-            frame[(cycles - 1) + (scanline * 256)] = palette[paletteTable[(pal << 2) + point]];
+            frame[(cycles - 1) + (scanline * 256)] = palette[read(0x3f00 + (pal << 2) + point)];
 
         // End of the frame
         if (scanline == 241 && cycles == 1) {
@@ -201,17 +203,18 @@ public class Ppu {
             cycles = 0;
             scanline++;
             if (scanline >= 262) {
+                _updateSpritesheet(0, 1);
+                _updateSpritesheet(1, 1);
+                complete = true;
                 scanline = -1;
             }
         }
     }
 
     public void reset() {
-        _updateSpritesheet(0, 1);
-        _updateSpritesheet(1, 1);
     }
 
-    private void _updateSpritesheet(int index, int pal) {
+    public void _updateSpritesheet(int index, int pal) {
         // The pattern table is divided into two 256-tile sections 16x16
         // Each tile in the pattern table is 16 bytes which are separated to left and
         // right planes
@@ -229,15 +232,20 @@ public class Ppu {
                     // Get the second plane
                     int high = read((index * 0x1000) + i + offset + 8);
                     for (int j = 0; j < 8; j++) {
-                        int point = (low & 0x1) + (high & 0x1);
+                        int point = (low & 0b1) + (high & 0b1);
                         low >>= 1;
                         high >>= 1;
                         _current[index][(x * 8 + (7 - j))
-                                + (((y * 8) + i) * 128)] = palette[read(0x3f00 + (pal << 2) + point)];
+                                + (((y * 8) + i) * 128)] = getColor(pal, point);
                     }
                 }
             }
         }
+    }
+
+    public int getColor(int pal, int point){
+        return palette[read(0x3f00 + (pal << 2) + point) & 0x3f];
+        // return palette[paletteTable[(pal << 2) + point]];
     }
 
     /* --------------------------------- Ppu I/O -------------------------------- */

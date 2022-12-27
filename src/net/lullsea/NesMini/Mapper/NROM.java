@@ -61,8 +61,13 @@ public class NROM extends Mapper {
                 break;
             case 0x7:
                 // TODO: PPU Data
+
                 val = nes.ppu.buffer;
-                if(nes.ppu.vramAddr.get() >= 0x3f00) nes.ppu.buffer = nes.ppu.read(nes.ppu.vramAddr.get());
+
+                nes.ppu.buffer = nes.ppu.read(nes.ppu.vramAddr.get());
+
+                if(nes.ppu.vramAddr.get() >= 0x3f00) val = nes.ppu.buffer;
+
                 nes.ppu.vramAddr.set(nes.ppu.vramAddr.get() + (nes.ppu.control.increment ? 32 : 1));
                 break;
 
@@ -117,20 +122,21 @@ public class NROM extends Mapper {
                     // tram_addr: ....... ABCDEFGH <- data: ABCDEFGH
                     nes.ppu.tramAddr.set((nes.ppu.tramAddr.get() & 0xff00) | data);
                     // vram_addr: <...all bits...> <- tram_addr: <...all bits...>
-                    nes.ppu.vramAddr = nes.ppu.tramAddr;
+                    nes.ppu.vramAddr.set(nes.ppu.tramAddr.get());
                 } else {
                     // The first write to this register latches the high byte to the address
                     // tram_addr: .CDEFGH ........ <- data: ..CDEFGH
-                    nes.ppu.tramAddr.set((nes.ppu.tramAddr.get() | (data << 8)) & 0x3fff);
+                    // nes.ppu.tramAddr.set((nes.ppu.tramAddr.get() | (data << 8)) & 0x3fff);
+                    nes.ppu.tramAddr.set(((data & 0x3f) << 8) | (nes.ppu.tramAddr.get() & 0xff));
                 }
                 nes.ppu.firstwrite = !nes.ppu.firstwrite;
-            System.out.println("asd");
                 break;
             case 0x7:
                 // All writes from this register increments the address
                 // Depending on the control registers increment mode 32 : 1
+
                 nes.ppu.write(nes.ppu.vramAddr.get(), data);
-                nes.ppu.vramAddr.set(nes.ppu.vramAddr.get() + (((nes.ppu.control.get() & 0x4) > 0) ? 32 : 1));
+                nes.ppu.vramAddr.set(nes.ppu.vramAddr.get() + (nes.ppu.control.increment ? 32 : 1));
                 break;
 
         }
@@ -138,11 +144,13 @@ public class NROM extends Mapper {
 
     @Override
     public int readROM(int addr) {
+        // System.out.println(nes.rom.prgCount);
         return nes.rom.rom[addr & (nes.rom.prgCount > 1 ? 0x7fff : 0x3fff)];
     }
 
     @Override
     public int readVROM(int addr) {
+
         return nes.rom.vrom[addr & 0x1fff];
     }
 

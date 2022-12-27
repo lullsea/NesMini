@@ -305,6 +305,8 @@ public class Debugger extends JFrame {
                 for(int i = 0; i < 32; i++)
                     tmp[i] = nes.ppu.palette[nes.ppu.paletteTable[i]];
                 pal.draw(tmp);
+                nes.ppu._updateSpritesheet(0, 0);
+                nes.ppu._updateSpritesheet(1, 0);
             }
             case 1 -> {
                 String s;
