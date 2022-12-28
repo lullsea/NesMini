@@ -1,5 +1,7 @@
 package net.lullsea.NesMini;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 
 enum StatusFlag {
@@ -45,7 +47,6 @@ public class Cpu {
      * complete
      */
 
-    // TODO: memory stuff
     public int[] ram; // 2KB internal ram
 
     public int cycles;
@@ -55,6 +56,7 @@ public class Cpu {
     private int addr;
 
     public String _debug;
+    FileWriter file;
 
     public int requestInterrupt;
 
@@ -89,6 +91,14 @@ public class Cpu {
 
         cycles = 0;
         requestInterrupt = 0;
+
+        // try {
+        //     file = new FileWriter("test.txt");
+        // } catch (IOException e) {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // }
+
     }
 
     public void process() {
@@ -104,14 +114,15 @@ public class Cpu {
             mode = (AddressingMode) lookup[opcode][0];
             cycles = (Integer) lookup[opcode][1];
 
-            // System.out.println(Integer.toHexString(opcode));
-            // if (opcode == 0xb5)
-            //     try {
-            //         Thread.sleep(1000);
-            //     } catch (InterruptedException e) {
-            //         // TODO Auto-generated catch block
-            //         e.printStackTrace();
-            //     }
+            // try {
+            //     file.write(Integer.toHexString(opcode));
+            //     if(getFlag(StatusFlag.ZERO))
+            //         file.write(" <-");
+            //     file.write("\n");
+            // } catch (IOException e) {
+            //     // TODO Auto-generated catch block
+            //     e.printStackTrace();
+            // }
 
             // 6th bit of the status flag always set to true
             // setFlag(StatusFlag.UNUSED, true);
@@ -128,7 +139,6 @@ public class Cpu {
         switch (mode) {
             case ZERO_PAGE:
                 addr = read(pc++);
-                addr &= 0xff;
                 break;
             case ABSOLUTE:
                 addr = readWord(pc);
@@ -152,48 +162,47 @@ public class Cpu {
                     addr += pc - 256;
                 break;
             case INDIRECT:
-                addr = readWord(pc);
+                int tmp = readWord(pc);
                 pc += 2;
                 // Check the low byte first
-                if ((addr & 0xff) == 0xff)
-                    addr = (read(addr + 1) << 8) | read(addr);
+                if ((tmp & 0xff) == 0xff)
+                    // addr = (read(addr + 1) << 8) | read(addr);
+                    addr = (read(tmp & 0xff00) << 8 ) | read(tmp);
                 else
-                    addr = (read(addr + 1) << 8) | read(addr);
+                    // addr = (read(addr + 1) << 8) | read(addr);
+                    addr = (read(tmp + 1) << 8) | read(tmp);
                 break;
             case ZERO_PAGE_X:
                 addr = read(pc++ + x);
-                addr &= 0xff;
                 break;
             case ZERO_PAGE_Y:
                 addr = read(pc++ + y);
-                addr &= 0xff;
                 break;
             case INDEXED_INDIRECT:
-                addr = read(pc++);
-                addr += x;
-                addr = readWord(addr);
+                addr = readWord(read(pc++) + x);
                 break;
             case INDIRECT_INDEXED:
-                addr = read(pc++);
-                addr = readWord(addr);
-                addr += y;
+                // addr = read(pc++);
+                addr = readWord(read(pc++)) + y;
 
                 cycles += (addr & 0xff00) != (read(pc - 1) << 8) ? 1 : 0;
 
                 break;
             case ABSOLUTE_X:
-                addr = readWord(pc++);
+                addr = readWord(pc);
+                pc += 2;
                 addr = (addr + x) & 0xffff;
                 // Add additional clock cycle if overflow occured
-                if ((addr & 0xff00) != (read(pc++) << 8))
-                    cycles += 1;
+                // if ((addr & 0xff00) != (read(pc++) << 8))
+                //     cycles += 1;
                 break;
             case ABSOLUTE_Y:
-                addr = readWord(pc++);
+                addr = readWord(pc);
+                pc += 2;
                 addr = (addr + y) & 0xffff;
                 // Add additional clock cycle if overflow occured
-                if ((addr & 0xff00) != (read(pc++) << 8))
-                    cycles += 1;
+                // if ((addr & 0xff00) != (read(pc++) << 8))
+                //     cycles += 1;
                 break;
         }
         return addr & 0xffff;
@@ -293,8 +302,6 @@ public class Cpu {
     }
 
     private void nmi() {
-        // TODO: Check if PPUCTRL bit 7 is true
-
         // Push PC to stack
         pushStack((pc >> 8) & 0xFF);
         pushStack(pc & 0xFF);
@@ -479,39 +486,45 @@ public class Cpu {
     /* ------------------------------ Instructions ------------------------------ */
 
     private void adc() {
-        int j = (a + read(addr) + getFlagBit(StatusFlag.CARRY)) & 0xffff;
+
+        int j = (a + read(addr) + getFlagBit(StatusFlag.CARRY));
 
         setFlag(StatusFlag.CARRY, j > 0xff);
+
         setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
 
         // setFlag(StatusFlag.OVERFLOW,
-        //         ((a ^ read(addr)) & 0x80) == 0 &&
-        //                 ((a ^ j) & 0x80) != 0);
+        // ((a ^ read(addr)) & 0x80) == 0 &&
+        // ((a ^ j) & 0x80) != 0);
 
         setFlag(StatusFlag.OVERFLOW, ib(~(a ^ read(addr)) & (a ^ j) & 0x80));
 
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
-
         a = j & 0xff;
+        System.out.println("A: " + a + " X: " + x);
+
     }
 
     private void and() {
-        a &= read(addr);
+        a = a & read(addr);
         setFlag(StatusFlag.ZERO, a == 0);
         setFlag(StatusFlag.NEGATIVE, ib(a & 0x80));
     }
 
     private void asl() {
-        // TODO
-        int j = read(addr) << 1;
-        setFlag(StatusFlag.CARRY, ib(j & 0xff00));
-        setFlag(StatusFlag.ZERO, !ib(j & 0xff));
-        setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
-
-        if (lookup[opcode][0] == AddressingMode.IMPLIED)
+        int j;
+        if (mode == AddressingMode.IMPLIED) {
+            j = a << 1;
+            setFlag(StatusFlag.CARRY, ib(a & 0x80));
             a = j & 0xff;
-        else
+        } else {
+            j = read(addr);
+            setFlag(StatusFlag.CARRY, ib(j & 0x80));
+            j <<= 1;
             write(addr, j);
+        }
+        setFlag(StatusFlag.ZERO, j == 0);
+        setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
     }
 
     private void branch() {
@@ -536,10 +549,11 @@ public class Cpu {
     }
 
     private void bit() {
-        int j = a & read(addr);
-        setFlag(StatusFlag.ZERO, !ib(j & 0xff));
+        int j = read(addr);
         setFlag(StatusFlag.NEGATIVE, ib(addr & 0x80));
         setFlag(StatusFlag.OVERFLOW, !ib(addr & 0x40));
+        j &= a;
+        setFlag(StatusFlag.ZERO, j == 0);
     }
 
     private void bmi() {
@@ -597,34 +611,35 @@ public class Cpu {
     }
 
     private void cmp() {
-        int j = (a - read(addr)) & 0xffff;
-        setFlag(StatusFlag.CARRY, a >= read(addr));
-        setFlag(StatusFlag.ZERO,  j == 0);
+
+        int j = a - read(addr);
+
+        setFlag(StatusFlag.CARRY, a >= 0);
+        setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
     }
 
     private void cpx() {
-        int j = (x - read(addr)) & 0xffff;
+        int j = x - read(addr);
 
-        setFlag(StatusFlag.CARRY, x >= read(addr));
-        setFlag(StatusFlag.ZERO, j == 0);
+        setFlag(StatusFlag.CARRY, x >= 0);
+        setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
     }
 
     private void cpy() {
-        int j = (y - read(addr)) & 0xffff;
+        int j = y - read(addr);
 
-        setFlag(StatusFlag.CARRY, y >= read(addr));
-        setFlag(StatusFlag.ZERO, j == 0);
+        setFlag(StatusFlag.CARRY, y >= 0);
+        setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
     }
 
     private void dec() {
-        int j = read(addr) - 1;
+        int j = (read(addr) - 1) & 0xff;
         write(addr, j);
         setFlag(StatusFlag.ZERO, j == 0);
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
-
     }
 
     private void dex() {
@@ -642,10 +657,11 @@ public class Cpu {
     private void eor() {
         a = (a ^ read(addr)) & 0xff;
         setFlag(StatusFlag.ZERO, a == 0);
+        setFlag(StatusFlag.NEGATIVE, ib(a & 0x80));
     }
 
     private void inc() {
-        int j = read(addr) + 1;
+        int j = (read(addr) + 1) & 0xff;
         write(addr, j);
         setFlag(StatusFlag.ZERO, j == 0);
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
@@ -676,8 +692,6 @@ public class Cpu {
     }
 
     private void lda() {
-        // System.out.println("addr: " + Integer.toHexString(addr) + " data: " +
-        // Integer.toHexString(a));
         a = read(addr);
 
         setFlag(StatusFlag.ZERO, a == 0);
@@ -697,35 +711,21 @@ public class Cpu {
     }
 
     private void lsr() {
-        // int j;
-        // if(lookup[opcode][0] == AddressingMode.ACCUMULATOR){
-        // // The fetched value is the a register if ACCUMULATOR
-        // j = a;
-        // setFlag(StatusFlag.CARRY, ib(j & 1));
-        // j >>= 1;
-        // a = j & 0xff;
-        // } else{
-        // j = read(addr);
-        // setFlag(StatusFlag.CARRY, ib(j & 1));
-        // j >>= 1;
-        // write(addr, j);
-        // }
+        int j;
 
-        // setFlag(StatusFlag.ZERO, j == 0);
-        // setFlag(StatusFlag.NEGATIVE, false);
-
-        int j = read(addr) >> 1;
-        setFlag(StatusFlag.CARRY, ib(read(addr) & 0x1));
-
-        if (lookup[opcode][0] == AddressingMode.ACCUMULATOR)
+        if (mode == AddressingMode.IMPLIED) {
+            j = a >> 1;
+            setFlag(StatusFlag.CARRY, ib(a & 0x1));
             a = j & 0xff;
-        else
+        } else {
+            j = read(addr);
+            setFlag(StatusFlag.CARRY, ib(j & 0x1));
+            j >>= 1;
             write(addr, j);
+        }
 
-        setFlag(StatusFlag.CARRY, ib(read(addr) & 0x1));
         setFlag(StatusFlag.ZERO, j == 0);
         setFlag(StatusFlag.NEGATIVE, false);
-
     }
 
     private void ora() {
@@ -739,9 +739,9 @@ public class Cpu {
     }
 
     private void php() {
-        pushStack(getStatus() | StatusFlag.BREAK.bit | StatusFlag.UNUSED.bit);
-        setFlag(StatusFlag.BREAK, false);
-        setFlag(StatusFlag.UNUSED, false);
+        setFlag(StatusFlag.BREAK, true);
+        setFlag(StatusFlag.UNUSED, true);
+        pushStack(getStatus());
     }
 
     private void pla() {
@@ -756,37 +756,51 @@ public class Cpu {
     }
 
     private void rol() {
-        int j = (read(addr) << 1) | getFlagBit(StatusFlag.CARRY);
-
-        setFlag(StatusFlag.CARRY, ib(j & 0xff00));
-        setFlag(StatusFlag.ZERO, !ib(j & 0xff));
-        setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
-
-        if (lookup[opcode][0] == AddressingMode.IMPLIED)
+        int j;
+        if (mode == AddressingMode.IMPLIED) {
+            j = a;
+            j = (a >> 1) + getFlagBit(StatusFlag.CARRY);
+            setFlag(StatusFlag.CARRY, ib(a & 0x80));
             a = j & 0xff;
-        else
+        } else {
+            j = read(addr);
+            boolean add = getFlag(StatusFlag.CARRY);
+            setFlag(StatusFlag.CARRY, ib(j & 0x80));
+            j = ((j << 1) & 0xff) | bi(add);
             write(addr, j);
+        }
+        setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
+        setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
     }
 
     private void ror() {
-        int j = (getFlagBit(StatusFlag.CARRY) << 7) | (read(addr) >> 1);
-        setFlag(StatusFlag.ZERO, !ib(j & 0xff));
-        setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
-        setFlag(StatusFlag.CARRY, ib(read(addr) & 0x1));
+        int j;
 
-        if (lookup[opcode][0] == AddressingMode.IMPLIED)
+        if (mode == AddressingMode.IMPLIED) {
+            j = a;
+            j = (a >> 1) + (getFlagBit(StatusFlag.CARRY) << 7);
+            setFlag(StatusFlag.CARRY, ib(a & 0x1));
             a = j & 0xff;
-        else
+        } else {
+            j = read(addr);
+            boolean add = getFlag(StatusFlag.CARRY);
+            setFlag(StatusFlag.CARRY, ib(j & 0x1));
+            j = (j >> 1) | (bi(add) << 7);
             write(addr, j);
+        }
+
+        setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
+        setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
 
     }
 
     private void rti() {
         status = popStack();
+        // setFlag(StatusFlag.BREAK, true);
         pc = popStack();
-        pc += popStack() << 8;
-        pc--;
+        pc |= popStack() << 8;
         setFlag(StatusFlag.UNUSED, true);
+        // pc--;
     }
 
     private void rts() {
@@ -798,15 +812,13 @@ public class Cpu {
 
     private void sbc() {
         // Invert low byte
-        int j = addr ^ 0xff;
+        int j = a - read(addr) - ( 1 - getFlagBit(StatusFlag.CARRY));
 
-        int k = a + j + getFlagBit(StatusFlag.CARRY);
-
-        setFlag(StatusFlag.OVERFLOW, ib((k ^ a) & (k ^ j) & 0x80));
-        setFlag(StatusFlag.NEGATIVE, ib(k & 0x80));
-        setFlag(StatusFlag.CARRY, ib(k & 0xff00));
-        setFlag(StatusFlag.ZERO, !ib(k & 0xff));
-        a = k & 0xff;
+        setFlag(StatusFlag.OVERFLOW, ib((j ^ a) & (j ^ j) & 0x80));
+        setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
+        setFlag(StatusFlag.CARRY, j >= 0);
+        setFlag(StatusFlag.ZERO, j == 0);
+        a = j & 0xff;
     }
 
     private void sec() {
@@ -822,7 +834,6 @@ public class Cpu {
     }
 
     private void sta() {
-
         write(addr, a);
     }
 
@@ -847,7 +858,7 @@ public class Cpu {
     }
 
     private void tsx() {
-        x = ptr;
+        x = ptr & 0xff;
         setFlag(StatusFlag.ZERO, x == 0);
         setFlag(StatusFlag.NEGATIVE, ib(x & 0x80));
     }
@@ -859,11 +870,13 @@ public class Cpu {
     }
 
     private void txs() {
-        ptr = x;
+        ptr = x & 0xff;
     }
 
     private void tya() {
         a = y;
+        setFlag(StatusFlag.ZERO, a == 0);
+        setFlag(StatusFlag.NEGATIVE, ib(a & 0x80));
     }
 
     private void nop() {
