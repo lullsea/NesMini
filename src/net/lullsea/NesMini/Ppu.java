@@ -55,6 +55,12 @@ public class Ppu {
         status = new PPUSTATUS();
 
         paletteTable = new int[32];
+        paletteTable[0] = 0x12;
+        paletteTable[1] = 21;
+        paletteTable[2] = 11;
+        paletteTable[3] = 16;
+        paletteTable[4] = 12;
+
         nametable = new Nametable[4];
         // Arrays.fill(nametable, new Nametable());
         for (int i = 0; i < 4; i++)
@@ -189,7 +195,7 @@ public class Ppu {
         }
 
         if ((cycles >= 1 && cycles <= 256) && (scanline >= 0 && scanline < 240))
-            frame[(cycles - 1) + (scanline * 256)] = palette[read(0x3f00 + (pal << 2) + point)];
+            frame[(cycles - 1) + (scanline * 256)] = getColor(pal, point);
 
         // End of the frame
         if (scanline == 241 && cycles == 1) {
@@ -293,6 +299,7 @@ public class Ppu {
     public void write(int addr, int data) {
         addr &= 0x3fff;
         data &= 0xff;
+        System.out.println("addr: " + Integer.toHexString(addr) + " d: " + data);
         if (addr <= 0x1fff)
             // Cannot write to vrom
             return;

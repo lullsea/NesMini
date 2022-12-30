@@ -56,7 +56,6 @@ public class Cpu {
     private int addr;
 
     public String _debug;
-    FileWriter file;
 
     public int requestInterrupt;
 
@@ -92,13 +91,6 @@ public class Cpu {
         cycles = 0;
         requestInterrupt = 0;
 
-        // try {
-        //     file = new FileWriter("test.txt");
-        // } catch (IOException e) {
-        //     // TODO Auto-generated catch block
-        //     e.printStackTrace();
-        // }
-
     }
 
     public void process() {
@@ -114,26 +106,16 @@ public class Cpu {
             mode = (AddressingMode) lookup[opcode][0];
             cycles = (Integer) lookup[opcode][1];
 
-            // try {
-            //     file.write(Integer.toHexString(opcode));
-            //     if(getFlag(StatusFlag.ZERO))
-            //         file.write(" <-");
-            //     file.write("\n");
-            // } catch (IOException e) {
-            //     // TODO Auto-generated catch block
-            //     e.printStackTrace();
-            // }
-
             // 6th bit of the status flag always set to true
             // setFlag(StatusFlag.UNUSED, true);
-            addr = parseAddressingMode(mode);
+            parseAddressingMode(mode);
+
             parseInstruction(opcode);
         }
         cycles--;
     }
 
-    public int parseAddressingMode(AddressingMode mode) {
-        int addr = 0;
+    public void parseAddressingMode(AddressingMode mode) {
         // Increment PC everytime it's read
         // Increment PC twice if it reads a word
         switch (mode) {
@@ -145,6 +127,7 @@ public class Cpu {
                 pc += 2;
                 break;
             case IMPLIED:
+                addr = 0;
                 // write(addr, a);
                 break;
             case ACCUMULATOR:
@@ -184,28 +167,26 @@ public class Cpu {
             case INDIRECT_INDEXED:
                 // addr = read(pc++);
                 addr = readWord(read(pc++)) + y;
-
                 cycles += (addr & 0xff00) != (read(pc - 1) << 8) ? 1 : 0;
-
                 break;
             case ABSOLUTE_X:
                 addr = readWord(pc);
                 pc += 2;
                 addr = (addr + x) & 0xffff;
                 // Add additional clock cycle if overflow occured
-                // if ((addr & 0xff00) != (read(pc++) << 8))
-                //     cycles += 1;
+                if ((addr & 0xff00) != (read(pc) << 8))
+                    cycles += 1;
                 break;
             case ABSOLUTE_Y:
                 addr = readWord(pc);
                 pc += 2;
                 addr = (addr + y) & 0xffff;
                 // Add additional clock cycle if overflow occured
-                // if ((addr & 0xff00) != (read(pc++) << 8))
-                //     cycles += 1;
+                if ((addr & 0xff00) != (read(pc) << 8))
+                    cycles += 1;
                 break;
         }
-        return addr & 0xffff;
+        addr &= 0xffff;
     }
 
     /* --------------------------------- Cpu I/O -------------------------------- */
@@ -501,12 +482,11 @@ public class Cpu {
 
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
         a = j & 0xff;
-        System.out.println("A: " + a + " X: " + x);
-
+        // System.out.println("A: " + a + " X: " + x + " D: " + Integer.toHexString(read(addr)) + " C: " + getFlagBit(StatusFlag.CARRY));
     }
 
     private void and() {
-        a = a & read(addr);
+        a &= read(addr);
         setFlag(StatusFlag.ZERO, a == 0);
         setFlag(StatusFlag.NEGATIVE, ib(a & 0x80));
     }
@@ -544,6 +524,7 @@ public class Cpu {
     }
 
     private void beq() {
+
         if (getFlag(StatusFlag.ZERO))
             branch();
     }
@@ -759,7 +740,7 @@ public class Cpu {
         int j;
         if (mode == AddressingMode.IMPLIED) {
             j = a;
-            j = (a >> 1) + getFlagBit(StatusFlag.CARRY);
+            j = (a << 1) + getFlagBit(StatusFlag.CARRY);
             setFlag(StatusFlag.CARRY, ib(a & 0x80));
             a = j & 0xff;
         } else {
@@ -796,11 +777,10 @@ public class Cpu {
 
     private void rti() {
         status = popStack();
-        // setFlag(StatusFlag.BREAK, true);
+        setFlag(StatusFlag.BREAK, false);
+        setFlag(StatusFlag.UNUSED, false);
         pc = popStack();
         pc |= popStack() << 8;
-        setFlag(StatusFlag.UNUSED, true);
-        // pc--;
     }
 
     private void rts() {

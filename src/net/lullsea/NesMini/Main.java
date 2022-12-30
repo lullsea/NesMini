@@ -10,7 +10,7 @@ public class Main {
             while (!nes.ppu.complete)
                 nes.process();
             nes.ppu.complete = false;
-            Thread.sleep(100);
+            Thread.sleep(60);
             nes.frame.graphic.draw(nes.ppu.frame);
 
         }
