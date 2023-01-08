@@ -22,9 +22,9 @@ public class Nes {
     }
 
     public void process() throws Exception {
-        ppu.process();
         if (n % 3 == 0)
             cpu.process();
+        ppu.process();
         n++;
         // Thread.sleep(100);
         _debug(0, false);

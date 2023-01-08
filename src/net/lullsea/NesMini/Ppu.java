@@ -18,6 +18,7 @@ public class Ppu {
             0x00B4F7, 0x00E0FF, 0x00E375, 0x03F42B, 0x78B82E, 0xE5E218, 0x787878, 0x000000, 0x000000, 0xFFFFFF,
             0xFFF2BE, 0xF8B8B8, 0xF8B8D8, 0xFFB6FF, 0xFFC3FF, 0xC7D1FF, 0x9ADAFF, 0x88EDF8, 0x83FFDD, 0xB8F8B8,
             0xF5F8AC, 0xFFFFB0, 0xF8D8F8, 0x000000, 0x000000 };
+
     int[] paletteTable;
 
     // left: $0 - $fff; right: $1000 - $1fff
@@ -49,17 +50,11 @@ public class Ppu {
 
     public Ppu(Nes nes) {
         this.nes = nes;
-
         control = new PPUCTRL();
         mask = new PPUMASK();
         status = new PPUSTATUS();
 
         paletteTable = new int[32];
-        paletteTable[0] = 0x12;
-        paletteTable[1] = 21;
-        paletteTable[2] = 11;
-        paletteTable[3] = 16;
-        paletteTable[4] = 12;
 
         nametable = new Nametable[4];
         // Arrays.fill(nametable, new Nametable());
@@ -92,11 +87,11 @@ public class Ppu {
 
         buffer = 0;
         complete = false;
-
     }
 
     public void process() {
 
+        //Clear vblank flag
         if (scanline == -1 && cycles == 1)
             status.vblank = false;
 
@@ -104,14 +99,14 @@ public class Ppu {
             cycles = 1;
 
         /* -------------------------- Pre render scanlines -------------------------- */
-        if ((scanline == -1 || scanline == 261) && (cycles >= 280 && cycles <= 304)) {
-            // the vertical scroll bits are reloaded if rendering is enabled.
-            if (mask.background || mask.sprite) {
-                vramAddr.coarseY = tramAddr.fineY;
-                vramAddr.select |= (tramAddr.select & 0b10);
-                vramAddr.fineY = tramAddr.fineY;
-            }
-        }
+        // if ((scanline == -1 || scanline == 261) && (cycles >= 280 && cycles <= 304)) {
+        //     // the vertical scroll bits are reloaded if rendering is enabled.
+        //     if (mask.background || mask.sprite) {
+        //         vramAddr.coarseY = tramAddr.coarseY;
+        //         vramAddr.select = (tramAddr.select & 0b10) | (vramAddr.select & 1);
+        //         vramAddr.fineY = tramAddr.fineY;
+        //     }
+        // }
 
         /* ---------------------------- Visible scanlines --------------------------- */
         if (scanline >= 0 && scanline < 240) {
@@ -145,26 +140,26 @@ public class Ppu {
                     // Pattern table tile low
                     case 4:
                         // FineY (3) | Bit Plane (1) | Column (4) | Row(4) | CTRL (1) | 0x1fff
-                        shifter.patternLow = read((vramAddr.fineY + (0 << 3) | (shifter.tile << 4)
+                        shifter.low = read((vramAddr.fineY | (0 << 3) | (shifter.tile << 4)
                                 | ((control.backgroundPtn ? 0x1000 : 0))) & 0x1fff);
                         break;
                     // Pattern table tile high
                     case 6:
                         // FineY (3) | Bit Plane (1) | Column (4) | Row(4) | CTRL (1) | 0x1fff
-                        shifter.patternHigh = read((vramAddr.fineY | (1 << 3) | (shifter.tile << 4)
+                        shifter.high = read((vramAddr.fineY | (1 << 3) | (shifter.tile << 4)
                                 | ((control.backgroundPtn ? 0x1000 : 0))) & 0x1fff);
                         break;
                     // Increment scroll horizontally every 8 dots
                     case 7:
                         if (mask.background || mask.sprite)
-                            vramAddr.increment(true);
+                            vramAddr.scroll(true);
                         break;
                 }
             }
 
             // End of visible scanline
             if (cycles == 256 && mask.background && mask.sprite)
-                vramAddr.increment(false);
+                vramAddr.scroll(false);
 
             if (cycles == 257) {
                 // Load the shift registers before transfering
@@ -178,10 +173,11 @@ public class Ppu {
 
             if (cycles == 338 || cycles == 340)
                 shifter.tile = read(0x2000 | (vramAddr.get() & 0xfff));
+        paletteTable[0] = 6;
 
         }
 
-        int pal = 0, point = 0;
+        int pal = 0, point = 0, pix = 0;
         if (mask.background) {
             int mux = 0x8000 >> fineX;
 
@@ -194,8 +190,16 @@ public class Ppu {
             pal = high | low;
         }
 
-        if ((cycles >= 1 && cycles <= 256) && (scanline >= 0 && scanline < 240))
-            frame[(cycles - 1) + (scanline * 256)] = getColor(pal, point);
+        /* ---------------------------- Background frame ---------------------------- */
+        if ((cycles >= 1 && cycles <= 256) && (scanline >= 0 && scanline < 240)) {
+            if (!mask.grayscale)
+            // Normal color
+                pix = getColor(pal, point);
+            else
+            // Grayscale with emphasis
+                pix = mask.red ? 0xff0000 : mask.green ? 0x00ff00 : mask.blue ? 0x0000ff : 0x000000;
+            frame[(cycles - 1) + (scanline * 256)] = pix;
+        }
 
         // End of the frame
         if (scanline == 241 && cycles == 1) {
@@ -209,8 +213,8 @@ public class Ppu {
             cycles = 0;
             scanline++;
             if (scanline >= 262) {
-                _updateSpritesheet(0, 1);
-                _updateSpritesheet(1, 1);
+                _updateSpritesheet(0, 0);
+                _updateSpritesheet(1, 0);
                 complete = true;
                 scanline = -1;
             }
@@ -249,7 +253,7 @@ public class Ppu {
         }
     }
 
-    public int getColor(int pal, int point){
+    public int getColor(int pal, int point) {
         return palette[read(0x3f00 + (pal << 2) + point) & 0x3f];
     }
 
@@ -289,17 +293,14 @@ public class Ppu {
 
             tmp = paletteTable[addr] & (mask.grayscale ? 0x30 : 0x3f);
         }
-        // System.out.println("addr: " + "$" + Integer.toHexString(addr) + " val: " +
-        // "$" + Integer.toHexString(tmp));
 
-        _createLog(addr, tmp, true);
         return tmp & 0xff;
     }
 
     public void write(int addr, int data) {
         addr &= 0x3fff;
         data &= 0xff;
-        System.out.println("addr: " + Integer.toHexString(addr) + " d: " + data);
+
         if (addr <= 0x1fff)
             // Cannot write to vrom
             return;
@@ -323,10 +324,8 @@ public class Ppu {
                 case 0x18 -> addr = 0x8;
                 case 0x1c -> addr = 0xc;
             }
-            paletteTable[addr] = data;
+            paletteTable[addr & 0x3f] = data;
         }
-        _createLog(addr, data, false);
-
     }
     /* ------------------------------ PPU Registers ----------------------------- */
 
@@ -440,7 +439,7 @@ public class Ppu {
                     (fineY << 12));
         }
 
-        public void increment(boolean isHorizontal) {
+        public void scroll(boolean isHorizontal) {
             if (isHorizontal) {
                 if (vramAddr.coarseX == 31) {
                     vramAddr.coarseX = 0;
@@ -465,11 +464,11 @@ public class Ppu {
         }
     }
 
-    private final class Nametable {
+    public final class Nametable {
         // Used for debugging
         private static int id = 0;
         String name;
-        private int[] tile;
+        public int[] tile;
         private int[] attribute;
 
         // ===== 1024 byte area of memory ===== //

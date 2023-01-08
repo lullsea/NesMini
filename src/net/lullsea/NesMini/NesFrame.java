@@ -10,7 +10,7 @@ public class NesFrame extends JFrame {
     Nes nes;
 
     NesFrame(Nes nes) {
-        super("Nes Mini - by Lull");
+        super("Nes Mini - Lull");
         this.nes = nes;
 
         /* -------------------------------- Menu Bar -------------------------------- */

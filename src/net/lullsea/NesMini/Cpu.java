@@ -1,9 +1,5 @@
 package net.lullsea.NesMini;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Arrays;
-
 enum StatusFlag {
     CARRY(1 << 0),
     ZERO(1 << 1),
@@ -150,7 +146,7 @@ public class Cpu {
                 // Check the low byte first
                 if ((tmp & 0xff) == 0xff)
                     // addr = (read(addr + 1) << 8) | read(addr);
-                    addr = (read(tmp & 0xff00) << 8 ) | read(tmp);
+                    addr = (read(tmp & 0xff00) << 8) | read(tmp);
                 else
                     // addr = (read(addr + 1) << 8) | read(addr);
                     addr = (read(tmp + 1) << 8) | read(tmp);
@@ -199,7 +195,6 @@ public class Cpu {
         else
             val = nes.mapper.read(addr);
 
-        _createLog(addr, val, true);
         return val & 0xff;
     }
 
@@ -214,7 +209,6 @@ public class Cpu {
         else
             nes.mapper.write(addr, data);
 
-        _createLog(addr, data, false);
     }
 
     // Stack implemented using a 256-byte array whose location is hardcoded at page
@@ -482,7 +476,8 @@ public class Cpu {
 
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
         a = j & 0xff;
-        // System.out.println("A: " + a + " X: " + x + " D: " + Integer.toHexString(read(addr)) + " C: " + getFlagBit(StatusFlag.CARRY));
+        // System.out.println("A: " + a + " X: " + x + " D: " +
+        // Integer.toHexString(read(addr)) + " C: " + getFlagBit(StatusFlag.CARRY));
     }
 
     private void and() {
@@ -792,7 +787,7 @@ public class Cpu {
 
     private void sbc() {
         // Invert low byte
-        int j = a - read(addr) - ( 1 - getFlagBit(StatusFlag.CARRY));
+        int j = a - read(addr) - (1 - getFlagBit(StatusFlag.CARRY));
 
         setFlag(StatusFlag.OVERFLOW, ib((j ^ a) & (j ^ j) & 0x80));
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));

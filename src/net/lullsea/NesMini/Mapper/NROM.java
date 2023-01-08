@@ -1,5 +1,6 @@
 package net.lullsea.NesMini.Mapper;
 
+
 public class NROM extends Mapper {
 
     public NROM() {
@@ -82,8 +83,10 @@ public class NROM extends Mapper {
         switch (addr) {
             case 0x0:
                 nes.ppu.control.set(data);
-                // tram_addr: ...GH.. ........ <- data: ......GH
-                nes.ppu.tramAddr.select = data & 0x3;
+                // TODO: fix forced condition
+
+                if(nes.ppu.tramAddr.get() < 0x3f00)
+                nes.ppu.tramAddr.select = nes.ppu.control.get() & 0x3;
                 break;
             case 0x1:
                 nes.ppu.mask.set(data);
@@ -121,12 +124,12 @@ public class NROM extends Mapper {
                     // The second write to this register latches the low byte to the address
                     // tram_addr: ....... ABCDEFGH <- data: ABCDEFGH
                     nes.ppu.tramAddr.set((nes.ppu.tramAddr.get() & 0xff00) | data);
-                    // vram_addr: <...all bits...> <- tram_addr: <...all bits...>
+                    // vram_addr: <...all bits...> <- tram_addr: <..ball bits...>
                     nes.ppu.vramAddr.set(nes.ppu.tramAddr.get());
+
                 } else {
                     // The first write to this register latches the high byte to the address
                     // tram_addr: .CDEFGH ........ <- data: ..CDEFGH
-                    // nes.ppu.tramAddr.set((nes.ppu.tramAddr.get() | (data << 8)) & 0x3fff);
                     nes.ppu.tramAddr.set(((data & 0x3f) << 8) | (nes.ppu.tramAddr.get() & 0xff));
                 }
                 nes.ppu.firstwrite = !nes.ppu.firstwrite;
@@ -134,11 +137,9 @@ public class NROM extends Mapper {
             case 0x7:
                 // All writes from this register increments the address
                 // Depending on the control registers increment mode 32 : 1
-
                 nes.ppu.write(nes.ppu.vramAddr.get(), data);
                 nes.ppu.vramAddr.set(nes.ppu.vramAddr.get() + (nes.ppu.control.increment ? 32 : 1));
                 break;
-
         }
     }
 

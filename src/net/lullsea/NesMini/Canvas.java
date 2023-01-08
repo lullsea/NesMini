@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 public class Canvas extends JPanel {
     private final BufferedImage image;
     private int width, height, i, j;
+    final private int serialVersionUID = 203;
 
     Canvas(int x, int y, int width, int height, int i, int j) {
         super();
@@ -34,6 +35,5 @@ public class Canvas extends JPanel {
         Graphics2D g2D = (Graphics2D) g;
         g2D.drawImage(image, 0, 0, width, height, null);
         g2D.setColor(Color.WHITE);
-
     }
 }

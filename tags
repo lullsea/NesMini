@@ -1,0 +1,328 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.7	//
+ABSOLUTE	.\src\net\lullsea\NesMini\Cpu.java	/^    ABSOLUTE,$/;"	e	enum:AddressingMode	file:
+ABSOLUTE_X	.\src\net\lullsea\NesMini\Cpu.java	/^    ABSOLUTE_X,$/;"	e	enum:AddressingMode	file:
+ABSOLUTE_Y	.\src\net\lullsea\NesMini\Cpu.java	/^    ABSOLUTE_Y$/;"	e	enum:AddressingMode	file:
+ACCUMULATOR	.\src\net\lullsea\NesMini\Cpu.java	/^    ACCUMULATOR,$/;"	e	enum:AddressingMode	file:
+AddressRegister	.\src\net\lullsea\NesMini\Ppu.java	/^        AddressRegister() {$/;"	m	class:Ppu.AddressRegister
+AddressRegister	.\src\net\lullsea\NesMini\Ppu.java	/^    public final class AddressRegister {$/;"	c	class:Ppu
+AddressingMode	.\src\net\lullsea\NesMini\Cpu.java	/^enum AddressingMode {$/;"	g
+BREAK	.\src\net\lullsea\NesMini\Cpu.java	/^    BREAK(1 << 4),$/;"	e	enum:StatusFlag	file:
+CARRY	.\src\net\lullsea\NesMini\Cpu.java	/^    CARRY(1 << 0),$/;"	e	enum:StatusFlag	file:
+Canvas	.\src\net\lullsea\NesMini\Canvas.java	/^    Canvas(int x, int y, int width, int height, int i, int j) {$/;"	m	class:Canvas
+Canvas	.\src\net\lullsea\NesMini\Canvas.java	/^public class Canvas extends JPanel {$/;"	c
+Cpu	.\src\net\lullsea\NesMini\Cpu.java	/^    Cpu(Nes nes) {$/;"	m	class:Cpu
+Cpu	.\src\net\lullsea\NesMini\Cpu.java	/^public class Cpu {$/;"	c
+DECIMAL	.\src\net\lullsea\NesMini\Cpu.java	/^    DECIMAL(1 << 3),$/;"	e	enum:StatusFlag	file:
+Debugger	.\src\net\lullsea\NesMini\Debugger.java	/^    Debugger(Nes nes, int tool) {$/;"	m	class:Debugger
+Debugger	.\src\net\lullsea\NesMini\Debugger.java	/^public class Debugger extends JFrame {$/;"	c
+FOUR_SCREEN	.\src\net\lullsea\NesMini\RomLoader.java	/^        FOUR_SCREEN,$/;"	e	enum:RomLoader.Mirror	file:
+HORIZONTAL	.\src\net\lullsea\NesMini\RomLoader.java	/^        HORIZONTAL,$/;"	e	enum:RomLoader.Mirror	file:
+IMMEDIATE	.\src\net\lullsea\NesMini\Cpu.java	/^    IMMEDIATE,$/;"	e	enum:AddressingMode	file:
+IMPLIED	.\src\net\lullsea\NesMini\Cpu.java	/^    IMPLIED,$/;"	e	enum:AddressingMode	file:
+INDEXED_INDIRECT	.\src\net\lullsea\NesMini\Cpu.java	/^    INDEXED_INDIRECT,$/;"	e	enum:AddressingMode	file:
+INDIRECT	.\src\net\lullsea\NesMini\Cpu.java	/^    INDIRECT,$/;"	e	enum:AddressingMode	file:
+INDIRECT_INDEXED	.\src\net\lullsea\NesMini\Cpu.java	/^    INDIRECT_INDEXED,$/;"	e	enum:AddressingMode	file:
+INTERRUPT	.\src\net\lullsea\NesMini\Cpu.java	/^    INTERRUPT(1 << 2),$/;"	e	enum:StatusFlag	file:
+Main	.\src\net\lullsea\NesMini\Main.java	/^public class Main {$/;"	c
+Mapper	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^public abstract class Mapper {$/;"	c
+Mirror	.\src\net\lullsea\NesMini\RomLoader.java	/^    public enum Mirror {$/;"	g	class:RomLoader
+NEGATIVE	.\src\net\lullsea\NesMini\Cpu.java	/^    NEGATIVE(1 << 7);$/;"	e	enum:StatusFlag	file:
+NROM	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^    public NROM() {$/;"	m	class:NROM
+NROM	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^public class NROM extends Mapper {$/;"	c
+Nametable	.\src\net\lullsea\NesMini\Ppu.java	/^        Nametable() {$/;"	m	class:Ppu.Nametable
+Nametable	.\src\net\lullsea\NesMini\Ppu.java	/^    private final class Nametable {$/;"	c	class:Ppu
+Nes	.\src\net\lullsea\NesMini\Nes.java	/^    public Nes() {$/;"	m	class:Nes
+Nes	.\src\net\lullsea\NesMini\Nes.java	/^public class Nes {$/;"	c
+NesFrame	.\src\net\lullsea\NesMini\NesFrame.java	/^    NesFrame(Nes nes) {$/;"	m	class:NesFrame
+NesFrame	.\src\net\lullsea\NesMini\NesFrame.java	/^public class NesFrame extends JFrame {$/;"	c
+OVERFLOW	.\src\net\lullsea\NesMini\Cpu.java	/^    OVERFLOW(1 << 6),$/;"	e	enum:StatusFlag	file:
+PPUCTRL	.\src\net\lullsea\NesMini\Ppu.java	/^        PPUCTRL() {$/;"	m	class:Ppu.PPUCTRL
+PPUCTRL	.\src\net\lullsea\NesMini\Ppu.java	/^    public final class PPUCTRL {$/;"	c	class:Ppu
+PPUMASK	.\src\net\lullsea\NesMini\Ppu.java	/^        PPUMASK() {$/;"	m	class:Ppu.PPUMASK
+PPUMASK	.\src\net\lullsea\NesMini\Ppu.java	/^    public final class PPUMASK {$/;"	c	class:Ppu
+PPUSTATUS	.\src\net\lullsea\NesMini\Ppu.java	/^        PPUSTATUS() {$/;"	m	class:Ppu.PPUSTATUS
+PPUSTATUS	.\src\net\lullsea\NesMini\Ppu.java	/^    public final class PPUSTATUS {$/;"	c	class:Ppu
+Ppu	.\src\net\lullsea\NesMini\Ppu.java	/^    public Ppu(Nes nes) {$/;"	m	class:Ppu
+Ppu	.\src\net\lullsea\NesMini\Ppu.java	/^public class Ppu {$/;"	c
+RELATIVE	.\src\net\lullsea\NesMini\Cpu.java	/^    RELATIVE,$/;"	e	enum:AddressingMode	file:
+RomLoader	.\src\net\lullsea\NesMini\RomLoader.java	/^    RomLoader(Nes nes, File game) throws Exception {$/;"	m	class:RomLoader
+RomLoader	.\src\net\lullsea\NesMini\RomLoader.java	/^public class RomLoader {$/;"	c
+SINGLE	.\src\net\lullsea\NesMini\RomLoader.java	/^        SINGLE$/;"	e	enum:RomLoader.Mirror	file:
+ShiftRegister	.\src\net\lullsea\NesMini\Ppu.java	/^        ShiftRegister() {$/;"	m	class:Ppu.ShiftRegister
+ShiftRegister	.\src\net\lullsea\NesMini\Ppu.java	/^    private final class ShiftRegister {$/;"	c	class:Ppu
+StatusFlag	.\src\net\lullsea\NesMini\Cpu.java	/^    private StatusFlag(int bit) {$/;"	m	class:StatusFlag	file:
+StatusFlag	.\src\net\lullsea\NesMini\Cpu.java	/^enum StatusFlag {$/;"	g
+UNLOADED	.\src\net\lullsea\NesMini\RomLoader.java	/^        UNLOADED,$/;"	e	enum:RomLoader.Mirror	file:
+UNUSED	.\src\net\lullsea\NesMini\Cpu.java	/^    UNUSED(1 << 5),$/;"	e	enum:StatusFlag	file:
+VERTICAL	.\src\net\lullsea\NesMini\RomLoader.java	/^        VERTICAL,$/;"	e	enum:RomLoader.Mirror	file:
+ZERO	.\src\net\lullsea\NesMini\Cpu.java	/^    ZERO(1 << 1),$/;"	e	enum:StatusFlag	file:
+ZERO_PAGE	.\src\net\lullsea\NesMini\Cpu.java	/^    ZERO_PAGE,$/;"	e	enum:AddressingMode	file:
+ZERO_PAGE_X	.\src\net\lullsea\NesMini\Cpu.java	/^    ZERO_PAGE_X,$/;"	e	enum:AddressingMode	file:
+ZERO_PAGE_Y	.\src\net\lullsea\NesMini\Cpu.java	/^    ZERO_PAGE_Y,$/;"	e	enum:AddressingMode	file:
+_createLog	.\src\net\lullsea\NesMini\Cpu.java	/^    private void _createLog(int addr, int data, Boolean isRead) {$/;"	m	class:Cpu	file:
+_createLog	.\src\net\lullsea\NesMini\Ppu.java	/^    private void _createLog(int addr, int data, Boolean isRead) {$/;"	m	class:Ppu	file:
+_current	.\src\net\lullsea\NesMini\Ppu.java	/^    public int[][] _current;$/;"	f	class:Ppu
+_debug	.\src\net\lullsea\NesMini\Cpu.java	/^    public String _debug;$/;"	f	class:Cpu
+_debug	.\src\net\lullsea\NesMini\Nes.java	/^    public void _debug(int tool, boolean create) {$/;"	m	class:Nes
+_debug	.\src\net\lullsea\NesMini\Ppu.java	/^    public String _debug;$/;"	f	class:Ppu
+_memory	.\src\net\lullsea\NesMini\Debugger.java	/^    private void _memory() {$/;"	m	class:Debugger	file:
+_pattern	.\src\net\lullsea\NesMini\Debugger.java	/^    private void _pattern() {$/;"	m	class:Debugger	file:
+_updateSpritesheet	.\src\net\lullsea\NesMini\Ppu.java	/^    public void _updateSpritesheet(int index, int pal) {$/;"	m	class:Ppu
+a	.\src\net\lullsea\NesMini\Cpu.java	/^    private int pc, a, x, y, ptr, status; \/\/ Program counter and registers$/;"	f	class:Cpu	file:
+adc	.\src\net\lullsea\NesMini\Cpu.java	/^    private void adc() {$/;"	m	class:Cpu	file:
+addr	.\src\net\lullsea\NesMini\Cpu.java	/^    private int addr;$/;"	f	class:Cpu	file:
+and	.\src\net\lullsea\NesMini\Cpu.java	/^    private void and() {$/;"	m	class:Cpu	file:
+arr	.\src\net\lullsea\NesMini\Ppu.java	/^    int[] arr;$/;"	f	class:Ppu
+asl	.\src\net\lullsea\NesMini\Cpu.java	/^    private void asl() {$/;"	m	class:Cpu	file:
+attribute	.\src\net\lullsea\NesMini\Ppu.java	/^        int tile, attribute, low, high;$/;"	f	class:Ppu.ShiftRegister
+attribute	.\src\net\lullsea\NesMini\Ppu.java	/^        private int[] attribute;$/;"	f	class:Ppu.Nametable	file:
+attributeHigh	.\src\net\lullsea\NesMini\Ppu.java	/^        int attributeLow, attributeHigh, patternLow, patternHigh;$/;"	f	class:Ppu.ShiftRegister
+attributeLow	.\src\net\lullsea\NesMini\Ppu.java	/^        int attributeLow, attributeHigh, patternLow, patternHigh;$/;"	f	class:Ppu.ShiftRegister
+background	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean grayscale, bgLeft, sprLeft, background, sprite, red, green, blue;$/;"	f	class:Ppu.PPUMASK
+backgroundPtn	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean backgroundPtn;$/;"	f	class:Ppu.PPUCTRL
+battery	.\src\net\lullsea\NesMini\RomLoader.java	/^    public boolean trainer, battery, isINES, isNES2, isNSF;$/;"	f	class:RomLoader
+bcc	.\src\net\lullsea\NesMini\Cpu.java	/^    private void bcc() {$/;"	m	class:Cpu	file:
+bcs	.\src\net\lullsea\NesMini\Cpu.java	/^    private void bcs() {$/;"	m	class:Cpu	file:
+beq	.\src\net\lullsea\NesMini\Cpu.java	/^    private void beq() {$/;"	m	class:Cpu	file:
+bgLeft	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean grayscale, bgLeft, sprLeft, background, sprite, red, green, blue;$/;"	f	class:Ppu.PPUMASK
+bi	.\src\net\lullsea\NesMini\Cpu.java	/^    private int bi(boolean a) {$/;"	m	class:Cpu	file:
+bit	.\src\net\lullsea\NesMini\Cpu.java	/^    final int bit;$/;"	f	class:StatusFlag
+bit	.\src\net\lullsea\NesMini\Cpu.java	/^    private void bit() {$/;"	m	class:Cpu	file:
+blue	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean grayscale, bgLeft, sprLeft, background, sprite, red, green, blue;$/;"	f	class:Ppu.PPUMASK
+bmi	.\src\net\lullsea\NesMini\Cpu.java	/^    private void bmi() {$/;"	m	class:Cpu	file:
+bne	.\src\net\lullsea\NesMini\Cpu.java	/^    private void bne() {$/;"	m	class:Cpu	file:
+bpl	.\src\net\lullsea\NesMini\Cpu.java	/^    private void bpl() {$/;"	m	class:Cpu	file:
+branch	.\src\net\lullsea\NesMini\Cpu.java	/^    private void branch() {$/;"	m	class:Cpu	file:
+brk	.\src\net\lullsea\NesMini\Cpu.java	/^    private void brk() {$/;"	m	class:Cpu	file:
+buffer	.\src\net\lullsea\NesMini\Ppu.java	/^    public int buffer;$/;"	f	class:Ppu
+bus	.\src\net\lullsea\NesMini\Ppu.java	/^        int bus;$/;"	f	class:Ppu.PPUSTATUS
+bvc	.\src\net\lullsea\NesMini\Cpu.java	/^    private void bvc() {$/;"	m	class:Cpu	file:
+bvs	.\src\net\lullsea\NesMini\Cpu.java	/^    private void bvs() {$/;"	m	class:Cpu	file:
+chrCount	.\src\net\lullsea\NesMini\RomLoader.java	/^    public int prgCount, chrCount;$/;"	f	class:RomLoader
+clc	.\src\net\lullsea\NesMini\Cpu.java	/^    private void clc() {$/;"	m	class:Cpu	file:
+cld	.\src\net\lullsea\NesMini\Cpu.java	/^    private void cld() {$/;"	m	class:Cpu	file:
+cli	.\src\net\lullsea\NesMini\Cpu.java	/^    private void cli() {$/;"	m	class:Cpu	file:
+clv	.\src\net\lullsea\NesMini\Cpu.java	/^    private void clv() {$/;"	m	class:Cpu	file:
+cmp	.\src\net\lullsea\NesMini\Cpu.java	/^    private void cmp() {$/;"	m	class:Cpu	file:
+coarseX	.\src\net\lullsea\NesMini\Ppu.java	/^        public int coarseX, coarseY, select, fineY;$/;"	f	class:Ppu.AddressRegister
+coarseY	.\src\net\lullsea\NesMini\Ppu.java	/^        public int coarseX, coarseY, select, fineY;$/;"	f	class:Ppu.AddressRegister
+complete	.\src\net\lullsea\NesMini\Ppu.java	/^    boolean complete;$/;"	f	class:Ppu
+console	.\src\net\lullsea\NesMini\Debugger.java	/^    StringBuilder console, console2;$/;"	f	class:Debugger
+console2	.\src\net\lullsea\NesMini\Debugger.java	/^    StringBuilder console, console2;$/;"	f	class:Debugger
+consoleLabel	.\src\net\lullsea\NesMini\Debugger.java	/^    JLabel consoleLabel, consoleLabel2;$/;"	f	class:Debugger
+consoleLabel2	.\src\net\lullsea\NesMini\Debugger.java	/^    JLabel consoleLabel, consoleLabel2;$/;"	f	class:Debugger
+control	.\src\net\lullsea\NesMini\Ppu.java	/^    public PPUCTRL control;$/;"	f	class:Ppu
+counter	.\src\net\lullsea\NesMini\Debugger.java	/^    private int counter;$/;"	f	class:Debugger	file:
+cpu	.\src\net\lullsea\NesMini\Nes.java	/^    public Cpu cpu;$/;"	f	class:Nes
+cpuLabel	.\src\net\lullsea\NesMini\Debugger.java	/^    JLabel cpuLabel, ppuLabel;$/;"	f	class:Debugger
+cpuMap	.\src\net\lullsea\NesMini\Debugger.java	/^    StringBuilder cpuMap, ppuMap;$/;"	f	class:Debugger
+cpx	.\src\net\lullsea\NesMini\Cpu.java	/^    private void cpx() {$/;"	m	class:Cpu	file:
+cpy	.\src\net\lullsea\NesMini\Cpu.java	/^    private void cpy() {$/;"	m	class:Cpu	file:
+cycles	.\src\net\lullsea\NesMini\Cpu.java	/^    public int cycles;$/;"	f	class:Cpu
+cycles	.\src\net\lullsea\NesMini\Ppu.java	/^    int cycles, scanline;$/;"	f	class:Ppu
+debug	.\src\net\lullsea\NesMini\Nes.java	/^    public Debugger debug;$/;"	f	class:Nes
+dec	.\src\net\lullsea\NesMini\Cpu.java	/^    private void dec() {$/;"	m	class:Cpu	file:
+dex	.\src\net\lullsea\NesMini\Cpu.java	/^    private void dex() {$/;"	m	class:Cpu	file:
+dey	.\src\net\lullsea\NesMini\Cpu.java	/^    private void dey() {$/;"	m	class:Cpu	file:
+draw	.\src\net\lullsea\NesMini\Canvas.java	/^    public void draw(int[] rgbArray) {$/;"	m	class:Canvas
+eor	.\src\net\lullsea\NesMini\Cpu.java	/^    private void eor() {$/;"	m	class:Cpu	file:
+f	.\src\net\lullsea\NesMini\Debugger.java	/^    private Font f = new Font(Font.MONOSPACED, Font.BOLD, 12);$/;"	f	class:Debugger	file:
+fineX	.\src\net\lullsea\NesMini\Ppu.java	/^    public int fineX; \/\/ Scrolling$/;"	f	class:Ppu
+fineY	.\src\net\lullsea\NesMini\Ppu.java	/^        public int coarseX, coarseY, select, fineY;$/;"	f	class:Ppu.AddressRegister
+firstwrite	.\src\net\lullsea\NesMini\Ppu.java	/^    public boolean firstwrite;$/;"	f	class:Ppu
+format	.\src\net\lullsea\NesMini\Debugger.java	/^    private String format(StringBuilder raw) {$/;"	m	class:Debugger	file:
+frame	.\src\net\lullsea\NesMini\Nes.java	/^    public NesFrame frame;$/;"	f	class:Nes
+frame	.\src\net\lullsea\NesMini\Ppu.java	/^    int[] frame; \/\/ Rendered image$/;"	f	class:Ppu
+get	.\src\net\lullsea\NesMini\Ppu.java	/^        public int get() {$/;"	m	class:Ppu.AddressRegister
+get	.\src\net\lullsea\NesMini\Ppu.java	/^        public int get() {$/;"	m	class:Ppu.PPUCTRL
+get	.\src\net\lullsea\NesMini\Ppu.java	/^        public int get() {$/;"	m	class:Ppu.PPUMASK
+get	.\src\net\lullsea\NesMini\Ppu.java	/^        public int get() {$/;"	m	class:Ppu.PPUSTATUS
+get	.\src\net\lullsea\NesMini\Ppu.java	/^        public int get(int addr) {$/;"	m	class:Ppu.Nametable
+getColor	.\src\net\lullsea\NesMini\Ppu.java	/^    public int getColor(int pal, int point){$/;"	m	class:Ppu
+getFlag	.\src\net\lullsea\NesMini\Cpu.java	/^    private boolean getFlag(StatusFlag flag) {$/;"	m	class:Cpu	file:
+getFlagBit	.\src\net\lullsea\NesMini\Cpu.java	/^    private int getFlagBit(StatusFlag flag) {$/;"	m	class:Cpu	file:
+getMirror	.\src\net\lullsea\NesMini\RomLoader.java	/^    public Mirror getMirror() {$/;"	m	class:RomLoader
+getStatus	.\src\net\lullsea\NesMini\Cpu.java	/^    public int getStatus() {$/;"	m	class:Cpu
+graphic	.\src\net\lullsea\NesMini\NesFrame.java	/^    Canvas graphic;$/;"	f	class:NesFrame
+grayscale	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean grayscale, bgLeft, sprLeft, background, sprite, red, green, blue;$/;"	f	class:Ppu.PPUMASK
+green	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean grayscale, bgLeft, sprLeft, background, sprite, red, green, blue;$/;"	f	class:Ppu.PPUMASK
+height	.\src\net\lullsea\NesMini\Canvas.java	/^    private int width, height, i, j;$/;"	f	class:Canvas	file:
+high	.\src\net\lullsea\NesMini\Ppu.java	/^        int tile, attribute, low, high;$/;"	f	class:Ppu.ShiftRegister
+i	.\src\net\lullsea\NesMini\Canvas.java	/^    private int width, height, i, j;$/;"	f	class:Canvas	file:
+ib	.\src\net\lullsea\NesMini\Cpu.java	/^    private boolean ib(int a) {$/;"	m	class:Cpu	file:
+id	.\src\net\lullsea\NesMini\Ppu.java	/^        private static int id = 0;$/;"	f	class:Ppu.Nametable	file:
+image	.\src\net\lullsea\NesMini\Canvas.java	/^    private final BufferedImage image;$/;"	f	class:Canvas	file:
+inc	.\src\net\lullsea\NesMini\Cpu.java	/^    private void inc() {$/;"	m	class:Cpu	file:
+increment	.\src\net\lullsea\NesMini\Ppu.java	/^        public boolean increment;$/;"	f	class:Ppu.PPUCTRL
+increment	.\src\net\lullsea\NesMini\Ppu.java	/^        public void increment(boolean isHorizontal) {$/;"	m	class:Ppu.AddressRegister
+inx	.\src\net\lullsea\NesMini\Cpu.java	/^    private void inx() {$/;"	m	class:Cpu	file:
+iny	.\src\net\lullsea\NesMini\Cpu.java	/^    private void iny() {$/;"	m	class:Cpu	file:
+irq	.\src\net\lullsea\NesMini\Cpu.java	/^    private void irq() {$/;"	m	class:Cpu	file:
+isINES	.\src\net\lullsea\NesMini\RomLoader.java	/^    public boolean trainer, battery, isINES, isNES2, isNSF;$/;"	f	class:RomLoader
+isNES2	.\src\net\lullsea\NesMini\RomLoader.java	/^    public boolean trainer, battery, isINES, isNES2, isNSF;$/;"	f	class:RomLoader
+isNSF	.\src\net\lullsea\NesMini\RomLoader.java	/^    public boolean trainer, battery, isINES, isNES2, isNSF;$/;"	f	class:RomLoader
+isSkip	.\src\net\lullsea\NesMini\Debugger.java	/^    boolean isSkip = false, isSkip2 = false;$/;"	f	class:Debugger
+isSkip2	.\src\net\lullsea\NesMini\Debugger.java	/^    boolean isSkip = false, isSkip2 = false;$/;"	f	class:Debugger
+j	.\src\net\lullsea\NesMini\Canvas.java	/^    private int width, height, i, j;$/;"	f	class:Canvas	file:
+jmp	.\src\net\lullsea\NesMini\Cpu.java	/^    private void jmp() {$/;"	m	class:Cpu	file:
+jsr	.\src\net\lullsea\NesMini\Cpu.java	/^    private void jsr() {$/;"	m	class:Cpu	file:
+lda	.\src\net\lullsea\NesMini\Cpu.java	/^    private void lda() {$/;"	m	class:Cpu	file:
+ldx	.\src\net\lullsea\NesMini\Cpu.java	/^    private void ldx() {$/;"	m	class:Cpu	file:
+ldy	.\src\net\lullsea\NesMini\Cpu.java	/^    private void ldy() {$/;"	m	class:Cpu	file:
+left	.\src\net\lullsea\NesMini\Debugger.java	/^    Canvas left, right, pal;$/;"	f	class:Debugger
+load	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^    public static Mapper load(int id){$/;"	m	class:Mapper
+load	.\src\net\lullsea\NesMini\Nes.java	/^    public void load(String filePath) throws Exception {$/;"	m	class:Nes
+load	.\src\net\lullsea\NesMini\Ppu.java	/^        public void load() {$/;"	m	class:Ppu.ShiftRegister
+lookup	.\src\net\lullsea\NesMini\Cpu.java	/^    final Object[][] lookup = {$/;"	f	class:Cpu
+low	.\src\net\lullsea\NesMini\Ppu.java	/^        int tile, attribute, low, high;$/;"	f	class:Ppu.ShiftRegister
+lsr	.\src\net\lullsea\NesMini\Cpu.java	/^    private void lsr() {$/;"	m	class:Cpu	file:
+main	.\src\net\lullsea\NesMini\Main.java	/^    public static void main(String[] args) throws Exception {$/;"	m	class:Main
+mapper	.\src\net\lullsea\NesMini\Nes.java	/^    public Mapper mapper;$/;"	f	class:Nes
+mapper	.\src\net\lullsea\NesMini\RomLoader.java	/^    public Mapper mapper;$/;"	f	class:RomLoader
+mapperID	.\src\net\lullsea\NesMini\RomLoader.java	/^    private int mapperID;$/;"	f	class:RomLoader	file:
+mask	.\src\net\lullsea\NesMini\Ppu.java	/^    public PPUMASK mask;$/;"	f	class:Ppu
+mirror	.\src\net\lullsea\NesMini\Ppu.java	/^    Mirror mirror;$/;"	f	class:Ppu
+mirror	.\src\net\lullsea\NesMini\RomLoader.java	/^    public Mirror mirror = Mirror.UNLOADED;$/;"	f	class:RomLoader
+mode	.\src\net\lullsea\NesMini\Cpu.java	/^    private AddressingMode mode;$/;"	f	class:Cpu	file:
+n	.\src\net\lullsea\NesMini\Nes.java	/^    int n;$/;"	f	class:Nes
+name	.\src\net\lullsea\NesMini\Ppu.java	/^        String name;$/;"	f	class:Ppu.Nametable
+nametable	.\src\net\lullsea\NesMini\Ppu.java	/^    Nametable[] nametable;$/;"	f	class:Ppu
+nes	.\src\net\lullsea\NesMini\Cpu.java	/^    Nes nes;$/;"	f	class:Cpu
+nes	.\src\net\lullsea\NesMini\Debugger.java	/^    Nes nes;$/;"	f	class:Debugger
+nes	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^    public Nes nes;$/;"	f	class:Mapper
+nes	.\src\net\lullsea\NesMini\NesFrame.java	/^    Nes nes;$/;"	f	class:NesFrame
+nes	.\src\net\lullsea\NesMini\Ppu.java	/^    Nes nes;$/;"	f	class:Ppu
+nes	.\src\net\lullsea\NesMini\RomLoader.java	/^    private Nes nes;$/;"	f	class:RomLoader	file:
+net.lullsea.NesMini	.\src\net\lullsea\NesMini\Canvas.java	/^package net.lullsea.NesMini;$/;"	p
+net.lullsea.NesMini	.\src\net\lullsea\NesMini\Cpu.java	/^package net.lullsea.NesMini;$/;"	p
+net.lullsea.NesMini	.\src\net\lullsea\NesMini\Debugger.java	/^package net.lullsea.NesMini;$/;"	p
+net.lullsea.NesMini	.\src\net\lullsea\NesMini\Main.java	/^package net.lullsea.NesMini;$/;"	p
+net.lullsea.NesMini	.\src\net\lullsea\NesMini\Nes.java	/^package net.lullsea.NesMini;$/;"	p
+net.lullsea.NesMini	.\src\net\lullsea\NesMini\NesFrame.java	/^package net.lullsea.NesMini;$/;"	p
+net.lullsea.NesMini	.\src\net\lullsea\NesMini\Ppu.java	/^package net.lullsea.NesMini;$/;"	p
+net.lullsea.NesMini	.\src\net\lullsea\NesMini\RomLoader.java	/^package net.lullsea.NesMini;$/;"	p
+net.lullsea.NesMini.Mapper	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^package net.lullsea.NesMini.Mapper;$/;"	p
+net.lullsea.NesMini.Mapper	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^package net.lullsea.NesMini.Mapper;$/;"	p
+nmi	.\src\net\lullsea\NesMini\Cpu.java	/^    private void nmi() {$/;"	m	class:Cpu	file:
+nmi	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean nmi;$/;"	f	class:Ppu.PPUCTRL
+nop	.\src\net\lullsea\NesMini\Cpu.java	/^    private void nop() {$/;"	m	class:Cpu	file:
+offset	.\src\net\lullsea\NesMini\Debugger.java	/^    int offset = 0, offset2 = 0;$/;"	f	class:Debugger
+offset2	.\src\net\lullsea\NesMini\Debugger.java	/^    int offset = 0, offset2 = 0;$/;"	f	class:Debugger
+opcode	.\src\net\lullsea\NesMini\Cpu.java	/^    public int opcode;$/;"	f	class:Cpu
+ora	.\src\net\lullsea\NesMini\Cpu.java	/^    private void ora() {$/;"	m	class:Cpu	file:
+paintComponent	.\src\net\lullsea\NesMini\Canvas.java	/^    protected void paintComponent(java.awt.Graphics g) {$/;"	m	class:Canvas
+pal	.\src\net\lullsea\NesMini\Debugger.java	/^    Canvas left, right, pal;$/;"	f	class:Debugger
+palette	.\src\net\lullsea\NesMini\Ppu.java	/^    int[] palette = { 0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840, 0x002F10,$/;"	f	class:Ppu
+paletteHigh	.\src\net\lullsea\NesMini\Ppu.java	/^    int patternLow, patternHigh, paletteLow, paletteHigh;$/;"	f	class:Ppu
+paletteLow	.\src\net\lullsea\NesMini\Ppu.java	/^    int patternLow, patternHigh, paletteLow, paletteHigh;$/;"	f	class:Ppu
+paletteTable	.\src\net\lullsea\NesMini\Ppu.java	/^    int[] paletteTable;$/;"	f	class:Ppu
+parseAddressingMode	.\src\net\lullsea\NesMini\Cpu.java	/^    public void parseAddressingMode(AddressingMode mode) {$/;"	m	class:Cpu
+parseInstruction	.\src\net\lullsea\NesMini\Cpu.java	/^    private void parseInstruction(int op) {$/;"	m	class:Cpu	file:
+patternHigh	.\src\net\lullsea\NesMini\Ppu.java	/^        int attributeLow, attributeHigh, patternLow, patternHigh;$/;"	f	class:Ppu.ShiftRegister
+patternHigh	.\src\net\lullsea\NesMini\Ppu.java	/^    int patternLow, patternHigh, paletteLow, paletteHigh;$/;"	f	class:Ppu
+patternLow	.\src\net\lullsea\NesMini\Ppu.java	/^        int attributeLow, attributeHigh, patternLow, patternHigh;$/;"	f	class:Ppu.ShiftRegister
+patternLow	.\src\net\lullsea\NesMini\Ppu.java	/^    int patternLow, patternHigh, paletteLow, paletteHigh;$/;"	f	class:Ppu
+patternTable	.\src\net\lullsea\NesMini\Ppu.java	/^    int[][] patternTable;$/;"	f	class:Ppu
+pc	.\src\net\lullsea\NesMini\Cpu.java	/^    private int pc, a, x, y, ptr, status; \/\/ Program counter and registers$/;"	f	class:Cpu	file:
+pha	.\src\net\lullsea\NesMini\Cpu.java	/^    private void pha() {$/;"	m	class:Cpu	file:
+php	.\src\net\lullsea\NesMini\Cpu.java	/^    private void php() {$/;"	m	class:Cpu	file:
+pla	.\src\net\lullsea\NesMini\Cpu.java	/^    private void pla() {$/;"	m	class:Cpu	file:
+plp	.\src\net\lullsea\NesMini\Cpu.java	/^    private void plp() {$/;"	m	class:Cpu	file:
+popStack	.\src\net\lullsea\NesMini\Cpu.java	/^    public int popStack() {$/;"	m	class:Cpu
+ppu	.\src\net\lullsea\NesMini\Nes.java	/^    public Ppu ppu;$/;"	f	class:Nes
+ppuLabel	.\src\net\lullsea\NesMini\Debugger.java	/^    JLabel cpuLabel, ppuLabel;$/;"	f	class:Debugger
+ppuMap	.\src\net\lullsea\NesMini\Debugger.java	/^    StringBuilder cpuMap, ppuMap;$/;"	f	class:Debugger
+prgCount	.\src\net\lullsea\NesMini\RomLoader.java	/^    public int prgCount, chrCount;$/;"	f	class:RomLoader
+process	.\src\net\lullsea\NesMini\Cpu.java	/^    public void process() {$/;"	m	class:Cpu
+process	.\src\net\lullsea\NesMini\Nes.java	/^    public void process() throws Exception {$/;"	m	class:Nes
+process	.\src\net\lullsea\NesMini\Ppu.java	/^    public void process() {$/;"	m	class:Ppu
+ptr	.\src\net\lullsea\NesMini\Cpu.java	/^    private int pc, a, x, y, ptr, status; \/\/ Program counter and registers$/;"	f	class:Cpu	file:
+pushStack	.\src\net\lullsea\NesMini\Cpu.java	/^    public void pushStack(int data) {$/;"	m	class:Cpu
+ram	.\src\net\lullsea\NesMini\Cpu.java	/^    public int[] ram; \/\/ 2KB internal ram$/;"	f	class:Cpu
+read	.\src\net\lullsea\NesMini\Cpu.java	/^    public int read(int addr) {$/;"	m	class:Cpu
+read	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^    public abstract int read(int addr);$/;"	m	class:Mapper
+read	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^    public int read(int addr) {$/;"	m	class:NROM
+read	.\src\net\lullsea\NesMini\Ppu.java	/^    public int read(int addr) {$/;"	m	class:Ppu
+readPpuRegister	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^    public abstract int readPpuRegister(int addr);$/;"	m	class:Mapper
+readPpuRegister	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^    public int readPpuRegister(int addr) {$/;"	m	class:NROM
+readROM	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^    public abstract int readROM(int addr);$/;"	m	class:Mapper
+readROM	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^    public int readROM(int addr) {$/;"	m	class:NROM
+readROM	.\src\net\lullsea\NesMini\RomLoader.java	/^    public int readROM(int addr) {$/;"	m	class:RomLoader
+readVROM	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^    public abstract int readVROM(int addr);$/;"	m	class:Mapper
+readVROM	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^    public int readVROM(int addr) {$/;"	m	class:NROM
+readVROM	.\src\net\lullsea\NesMini\RomLoader.java	/^    public int readVROM(int addr) {$/;"	m	class:RomLoader
+readWord	.\src\net\lullsea\NesMini\Cpu.java	/^    public int readWord(int addr) {$/;"	m	class:Cpu
+red	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean grayscale, bgLeft, sprLeft, background, sprite, red, green, blue;$/;"	f	class:Ppu.PPUMASK
+requestInterrupt	.\src\net\lullsea\NesMini\Cpu.java	/^    public int requestInterrupt;$/;"	f	class:Cpu
+reset	.\src\net\lullsea\NesMini\Cpu.java	/^    public void reset() {$/;"	m	class:Cpu
+reset	.\src\net\lullsea\NesMini\Ppu.java	/^    public void reset() {$/;"	m	class:Ppu
+right	.\src\net\lullsea\NesMini\Debugger.java	/^    Canvas left, right, pal;$/;"	f	class:Debugger
+rol	.\src\net\lullsea\NesMini\Cpu.java	/^    private void rol() {$/;"	m	class:Cpu	file:
+rom	.\src\net\lullsea\NesMini\Nes.java	/^    public RomLoader rom;$/;"	f	class:Nes
+rom	.\src\net\lullsea\NesMini\RomLoader.java	/^    public int[] rom, vrom;$/;"	f	class:RomLoader
+ror	.\src\net\lullsea\NesMini\Cpu.java	/^    private void ror() {$/;"	m	class:Cpu	file:
+rti	.\src\net\lullsea\NesMini\Cpu.java	/^    private void rti() {$/;"	m	class:Cpu	file:
+rts	.\src\net\lullsea\NesMini\Cpu.java	/^    private void rts() {$/;"	m	class:Cpu	file:
+sbc	.\src\net\lullsea\NesMini\Cpu.java	/^    private void sbc() {$/;"	m	class:Cpu	file:
+scanline	.\src\net\lullsea\NesMini\Ppu.java	/^    int cycles, scanline;$/;"	f	class:Ppu
+sec	.\src\net\lullsea\NesMini\Cpu.java	/^    private void sec() {$/;"	m	class:Cpu	file:
+sed	.\src\net\lullsea\NesMini\Cpu.java	/^    private void sed() {$/;"	m	class:Cpu	file:
+sei	.\src\net\lullsea\NesMini\Cpu.java	/^    private void sei() {$/;"	m	class:Cpu	file:
+select	.\src\net\lullsea\NesMini\Ppu.java	/^        int select;$/;"	f	class:Ppu.PPUCTRL
+select	.\src\net\lullsea\NesMini\Ppu.java	/^        public int coarseX, coarseY, select, fineY;$/;"	f	class:Ppu.AddressRegister
+serialVersionUID	.\src\net\lullsea\NesMini\Canvas.java	/^    final private int serialVersionUID = 203;$/;"	f	class:Canvas	file:
+set	.\src\net\lullsea\NesMini\Ppu.java	/^        public void set(int addr, int data) {$/;"	m	class:Ppu.Nametable
+set	.\src\net\lullsea\NesMini\Ppu.java	/^        public void set(int data) {$/;"	m	class:Ppu.AddressRegister
+set	.\src\net\lullsea\NesMini\Ppu.java	/^        public void set(int data) {$/;"	m	class:Ppu.PPUCTRL
+set	.\src\net\lullsea\NesMini\Ppu.java	/^        public void set(int data) {$/;"	m	class:Ppu.PPUMASK
+setFlag	.\src\net\lullsea\NesMini\Cpu.java	/^    private void setFlag(StatusFlag flag, boolean b) {$/;"	m	class:Cpu	file:
+shifter	.\src\net\lullsea\NesMini\Ppu.java	/^    ShiftRegister shifter;$/;"	f	class:Ppu
+slave	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean slave;$/;"	f	class:Ppu.PPUCTRL
+spr0hit	.\src\net\lullsea\NesMini\Ppu.java	/^        public boolean sprOverflow, spr0hit, vblank;$/;"	f	class:Ppu.PPUSTATUS
+sprLeft	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean grayscale, bgLeft, sprLeft, background, sprite, red, green, blue;$/;"	f	class:Ppu.PPUMASK
+sprOverflow	.\src\net\lullsea\NesMini\Ppu.java	/^        public boolean sprOverflow, spr0hit, vblank;$/;"	f	class:Ppu.PPUSTATUS
+sprSize	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean sprSize;$/;"	f	class:Ppu.PPUCTRL
+sprite	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean grayscale, bgLeft, sprLeft, background, sprite, red, green, blue;$/;"	f	class:Ppu.PPUMASK
+spritePtn	.\src\net\lullsea\NesMini\Ppu.java	/^        boolean spritePtn;$/;"	f	class:Ppu.PPUCTRL
+sta	.\src\net\lullsea\NesMini\Cpu.java	/^    private void sta() {$/;"	m	class:Cpu	file:
+startup	.\src\net\lullsea\NesMini\Nes.java	/^    public void startup() {$/;"	m	class:Nes
+status	.\src\net\lullsea\NesMini\Cpu.java	/^    private int pc, a, x, y, ptr, status; \/\/ Program counter and registers$/;"	f	class:Cpu	file:
+status	.\src\net\lullsea\NesMini\Ppu.java	/^    public PPUSTATUS status;$/;"	f	class:Ppu
+stx	.\src\net\lullsea\NesMini\Cpu.java	/^    private void stx() {$/;"	m	class:Cpu	file:
+sty	.\src\net\lullsea\NesMini\Cpu.java	/^    private void sty() {$/;"	m	class:Cpu	file:
+tax	.\src\net\lullsea\NesMini\Cpu.java	/^    private void tax() {$/;"	m	class:Cpu	file:
+tay	.\src\net\lullsea\NesMini\Cpu.java	/^    private void tay() {$/;"	m	class:Cpu	file:
+tile	.\src\net\lullsea\NesMini\Ppu.java	/^        int tile, attribute, low, high;$/;"	f	class:Ppu.ShiftRegister
+tile	.\src\net\lullsea\NesMini\Ppu.java	/^        private int[] tile;$/;"	f	class:Ppu.Nametable	file:
+toString	.\src\net\lullsea\NesMini\Cpu.java	/^    public String toString() {$/;"	m	class:Cpu
+toString	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^    public String toString() {$/;"	m	class:NROM
+toString	.\src\net\lullsea\NesMini\RomLoader.java	/^    public String toString() {$/;"	m	class:RomLoader
+tool	.\src\net\lullsea\NesMini\Debugger.java	/^    int tool;$/;"	f	class:Debugger
+trainer	.\src\net\lullsea\NesMini\RomLoader.java	/^    public boolean trainer, battery, isINES, isNES2, isNSF;$/;"	f	class:RomLoader
+tramAddr	.\src\net\lullsea\NesMini\Ppu.java	/^    public AddressRegister vramAddr, tramAddr;$/;"	f	class:Ppu
+tsx	.\src\net\lullsea\NesMini\Cpu.java	/^    private void tsx() {$/;"	m	class:Cpu	file:
+txa	.\src\net\lullsea\NesMini\Cpu.java	/^    private void txa() {$/;"	m	class:Cpu	file:
+txs	.\src\net\lullsea\NesMini\Cpu.java	/^    private void txs() {$/;"	m	class:Cpu	file:
+tya	.\src\net\lullsea\NesMini\Cpu.java	/^    private void tya() {$/;"	m	class:Cpu	file:
+update	.\src\net\lullsea\NesMini\Debugger.java	/^    public void update() {$/;"	m	class:Debugger
+update	.\src\net\lullsea\NesMini\Ppu.java	/^        public void update() {$/;"	m	class:Ppu.ShiftRegister
+vblank	.\src\net\lullsea\NesMini\Ppu.java	/^        public boolean sprOverflow, spr0hit, vblank;$/;"	f	class:Ppu.PPUSTATUS
+vramAddr	.\src\net\lullsea\NesMini\Ppu.java	/^    public AddressRegister vramAddr, tramAddr;$/;"	f	class:Ppu
+vrom	.\src\net\lullsea\NesMini\RomLoader.java	/^    public int[] rom, vrom;$/;"	f	class:RomLoader
+width	.\src\net\lullsea\NesMini\Canvas.java	/^    private int width, height, i, j;$/;"	f	class:Canvas	file:
+write	.\src\net\lullsea\NesMini\Cpu.java	/^    public void write(int addr, int data) {$/;"	m	class:Cpu
+write	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^    public abstract void write(int addr, int data);$/;"	m	class:Mapper
+write	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^    public void write(int addr, int data) {$/;"	m	class:NROM
+write	.\src\net\lullsea\NesMini\Ppu.java	/^    public void write(int addr, int data) {$/;"	m	class:Ppu
+writePpuRegister	.\src\net\lullsea\NesMini\Mapper\Mapper.java	/^    public abstract void writePpuRegister(int addr, int data);$/;"	m	class:Mapper
+writePpuRegister	.\src\net\lullsea\NesMini\Mapper\NROM.java	/^    public void writePpuRegister(int addr, int data) {$/;"	m	class:NROM
+writeVROM	.\src\net\lullsea\NesMini\RomLoader.java	/^    public void writeVROM(int addr, int data) {$/;"	m	class:RomLoader
+x	.\src\net\lullsea\NesMini\Cpu.java	/^    private int pc, a, x, y, ptr, status; \/\/ Program counter and registers$/;"	f	class:Cpu	file:
+x	.\src\net\lullsea\NesMini\Debugger.java	/^    private final int x = 50, y = 40;$/;"	f	class:Debugger	file:
+y	.\src\net\lullsea\NesMini\Cpu.java	/^    private int pc, a, x, y, ptr, status; \/\/ Program counter and registers$/;"	f	class:Cpu	file:
+y	.\src\net\lullsea\NesMini\Debugger.java	/^    private final int x = 50, y = 40;$/;"	f	class:Debugger	file:
