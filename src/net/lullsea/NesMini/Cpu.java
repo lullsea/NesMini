@@ -99,11 +99,13 @@ public class Cpu {
         if (cycles == 0) {
             opcode = read(pc++);
 
+            setFlag(StatusFlag.UNUSED, true);
+
             mode = (AddressingMode) lookup[opcode][0];
             cycles = (Integer) lookup[opcode][1];
 
             // 6th bit of the status flag always set to true
-            // setFlag(StatusFlag.UNUSED, true);
+            setFlag(StatusFlag.UNUSED, true);
             parseAddressingMode(mode);
 
             parseInstruction(opcode);
@@ -194,7 +196,7 @@ public class Cpu {
             val = ram[addr & 0x7ff];
         else
             val = nes.mapper.read(addr);
-
+        // _createLog(addr, val, true);
         return val & 0xff;
     }
 
@@ -208,7 +210,7 @@ public class Cpu {
             ram[addr & 0x7ff] = data;
         else
             nes.mapper.write(addr, data);
-
+        // _createLog(addr, data, false);
     }
 
     // Stack implemented using a 256-byte array whose location is hardcoded at page
@@ -291,7 +293,6 @@ public class Cpu {
 
         // Read new PC from fixed addr
         pc = readWord(0xfffa);
-
         // Add some cycles to stop
         cycles = 6;
     }

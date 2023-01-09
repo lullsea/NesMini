@@ -6,12 +6,12 @@ public class Main {
     int test[] = {1, 2, 3, 4};
     public static void main(String[] args) throws Exception {
         Nes nes = new Nes();
-        nes.load("C:/Users/user/downloads/smb.nes");
+        nes.load("C:/Users/user/downloads/nestest.nes");
         while (true) {
             while (!nes.ppu.complete)
                 nes.process();
             nes.ppu.complete = false;
-            Thread.sleep(100);
+            Thread.sleep(60);
             nes.frame.graphic.draw(nes.ppu.frame);
 
         }

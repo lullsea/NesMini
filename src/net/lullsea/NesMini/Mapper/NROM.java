@@ -1,7 +1,9 @@
 package net.lullsea.NesMini.Mapper;
 
+import java.io.FileWriter;
 
 public class NROM extends Mapper {
+
 
     public NROM() {
     }
@@ -34,6 +36,7 @@ public class NROM extends Mapper {
     public int readPpuRegister(int addr) {
         addr &= 0x7;
         int val = 0;
+
         switch (addr) {
             // Control is unreadable
             case 0x0:
@@ -61,17 +64,12 @@ public class NROM extends Mapper {
                 // PPU Address is unreadable
                 break;
             case 0x7:
-                // TODO: PPU Data
-
                 val = nes.ppu.buffer;
-
                 nes.ppu.buffer = nes.ppu.read(nes.ppu.vramAddr.get());
-
-                if(nes.ppu.vramAddr.get() >= 0x3f00) val = nes.ppu.buffer;
-
-                nes.ppu.vramAddr.set(nes.ppu.vramAddr.get() + (nes.ppu.control.increment ? 32 : 1));
+                if (nes.ppu.vramAddr.get() >= 0x3f00)
+                    val = nes.ppu.buffer;
+                nes.ppu.vramAddr.increment(nes.ppu.control.increment);
                 break;
-
         }
         return val & 0xff;
     }
@@ -80,13 +78,13 @@ public class NROM extends Mapper {
     public void writePpuRegister(int addr, int data) {
         addr &= 0x7;
         data &= 0xff;
+
         switch (addr) {
             case 0x0:
                 nes.ppu.control.set(data);
                 // TODO: fix forced condition
-
-                if(nes.ppu.tramAddr.get() < 0x3f00)
-                nes.ppu.tramAddr.select = nes.ppu.control.get() & 0x3;
+                if (nes.ppu.tramAddr.get() < 0x3f00)
+                    nes.ppu.tramAddr.select = data & 3;
                 break;
             case 0x1:
                 nes.ppu.mask.set(data);
@@ -138,7 +136,7 @@ public class NROM extends Mapper {
                 // All writes from this register increments the address
                 // Depending on the control registers increment mode 32 : 1
                 nes.ppu.write(nes.ppu.vramAddr.get(), data);
-                nes.ppu.vramAddr.set(nes.ppu.vramAddr.get() + (nes.ppu.control.increment ? 32 : 1));
+                nes.ppu.vramAddr.increment(nes.ppu.control.increment);
                 break;
         }
     }

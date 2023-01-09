@@ -68,48 +68,39 @@ public class Ppu {
             case HORIZONTAL -> arr = new int[] { 0, 0, 1, 1 };
             case VERTICAL -> arr = new int[] { 0, 1, 0, 1 };
             case SINGLE -> arr = new int[] { 0, 0, 0, 0 };
-            case FOUR_SCREEN -> arr = new int[] { 1, 2, 3, 4 };
+            case FOUR_SCREEN -> arr = new int[] { 0, 1, 2, 3 };
             case UNLOADED -> {
                 break;
             }
         }
-
         patternTable = new int[2][4096];
 
         shifter = new ShiftRegister();
 
         frame = new int[256 * 240];
-        cycles = 1;
-        scanline = 0;
+        cycles = 0;
+        scanline = -1;
 
         vramAddr = tramAddr = new AddressRegister();
         _current = new int[2][128 * 128];
 
         buffer = 0;
         complete = false;
+        firstwrite = false;
     }
 
     public void process() {
 
-        //Clear vblank flag
-        if (scanline == -1 && cycles == 1)
-            status.vblank = false;
-
-        if (scanline == 0 && cycles == 0)
-            cycles = 1;
-
-        /* -------------------------- Pre render scanlines -------------------------- */
-        // if ((scanline == -1 || scanline == 261) && (cycles >= 280 && cycles <= 304)) {
-        //     // the vertical scroll bits are reloaded if rendering is enabled.
-        //     if (mask.background || mask.sprite) {
-        //         vramAddr.coarseY = tramAddr.coarseY;
-        //         vramAddr.select = (tramAddr.select & 0b10) | (vramAddr.select & 1);
-        //         vramAddr.fineY = tramAddr.fineY;
-        //     }
-        // }
-
         /* ---------------------------- Visible scanlines --------------------------- */
-        if (scanline >= 0 && scanline < 240) {
+        if (scanline >= -1 && scanline < 240) {
+
+            // Clear vblank flag
+            if (scanline == -1 && cycles == 1)
+                status.vblank = false;
+
+            if (scanline == 0 && cycles == 0)
+                cycles = 1;
+
             // At the beginning of each scanline, the data for the first two tiles is
             // already loaded into the shift registers
             // Idle cycle
@@ -117,8 +108,11 @@ public class Ppu {
 
             // The data for each tile is fetched during this phase
             // Every memory access takes 2 cycles to complete
-            if ((cycles >= 1 || cycles <= 256) || (cycles >= 321 && cycles <= 335)) {
-                shifter.update();
+            if ((cycles >= 2 && cycles < 258) || (cycles >= 321 && cycles < 338)) {
+
+                if (mask.background)
+                    shifter.update();
+
                 switch ((cycles - 1) % 8) {
                     // Nametable byte
                     case 0:
@@ -128,7 +122,7 @@ public class Ppu {
                     // Attribute byte
                     case 2:
                         // 0x23C0 | select | coarseY high 3 bits | coarseX high 3 bits
-                        shifter.attribute = read(0x23C0 | (vramAddr.get() & 0x0C00) |
+                        shifter.attribute = read(0x23C0 | (vramAddr.get() & 0x0c00) |
                                 ((vramAddr.get() >> 4) & 0x38) | ((vramAddr.get() >> 2) & 0x07));
 
                         if ((vramAddr.coarseY & 0b10) > 0)
@@ -141,13 +135,13 @@ public class Ppu {
                     case 4:
                         // FineY (3) | Bit Plane (1) | Column (4) | Row(4) | CTRL (1) | 0x1fff
                         shifter.low = read((vramAddr.fineY | (0 << 3) | (shifter.tile << 4)
-                                | ((control.backgroundPtn ? 0x1000 : 0))) & 0x1fff);
+                                | ((control.backgroundPtn ? 0x1000 : 0))));
                         break;
                     // Pattern table tile high
                     case 6:
                         // FineY (3) | Bit Plane (1) | Column (4) | Row(4) | CTRL (1) | 0x1fff
                         shifter.high = read((vramAddr.fineY | (1 << 3) | (shifter.tile << 4)
-                                | ((control.backgroundPtn ? 0x1000 : 0))) & 0x1fff);
+                                | ((control.backgroundPtn ? 0x1000 : 0))));
                         break;
                     // Increment scroll horizontally every 8 dots
                     case 7:
@@ -158,8 +152,9 @@ public class Ppu {
             }
 
             // End of visible scanline
-            if (cycles == 256 && mask.background && mask.sprite)
-                vramAddr.scroll(false);
+            if (cycles == 256)
+                if (mask.background || mask.sprite)
+                    vramAddr.scroll(false);
 
             if (cycles == 257) {
                 // Load the shift registers before transfering
@@ -167,52 +162,59 @@ public class Ppu {
 
                 if (mask.background || mask.sprite) {
                     vramAddr.coarseX = tramAddr.coarseX;
-                    vramAddr.select |= (tramAddr.select & 0b01);
+                    vramAddr.select = (vramAddr.select & 0b10) | (tramAddr.select & 0b01);
                 }
             }
 
             if (cycles == 338 || cycles == 340)
-                shifter.tile = read(0x2000 | (vramAddr.get() & 0xfff));
-        paletteTable[0] = 6;
+                shifter.tile = read(0x2800 | (vramAddr.get() & 0xfff));
 
-        }
+            /* -------------------------- Pre render scanlines -------------------------- */
+            if ((scanline == -1) && (cycles >= 280 && cycles <= 304))
+                // the vertical scroll bits are reloaded if rendering is enabled.
+                if (mask.background || mask.sprite) {
+                    vramAddr.coarseY = tramAddr.coarseY;
+                    vramAddr.select = (tramAddr.select & 0b10) | (vramAddr.select & 1);
+                    vramAddr.fineY = tramAddr.fineY;
+                }
 
-        int pal = 0, point = 0, pix = 0;
-        if (mask.background) {
-            int mux = 0x8000 >> fineX;
-
-            int low = (shifter.patternLow & mux) > 0 ? 1 : 0;
-            int high = (shifter.patternHigh & mux) > 0 ? 2 : 0;
-            point = high | low;
-
-            low = (shifter.attributeLow & mux) > 0 ? 1 : 0;
-            high = (shifter.attributeHigh & mux) > 0 ? 2 : 0;
-            pal = high | low;
-        }
-
-        /* ---------------------------- Background frame ---------------------------- */
-        if ((cycles >= 1 && cycles <= 256) && (scanline >= 0 && scanline < 240)) {
-            if (!mask.grayscale)
-            // Normal color
-                pix = getColor(pal, point);
-            else
-            // Grayscale with emphasis
-                pix = mask.red ? 0xff0000 : mask.green ? 0x00ff00 : mask.blue ? 0x0000ff : 0x000000;
-            frame[(cycles - 1) + (scanline * 256)] = pix;
         }
 
         // End of the frame
         if (scanline == 241 && cycles == 1) {
             status.vblank = true;
             if (control.nmi)
-                nes.cpu.requestInterrupt = 2;
+                nes.cpu.requestInterrupt = 2; // Ask the cpu to perform NMI
         }
 
+        /* ---------------------------- Background frame ---------------------------- */
+        if ((cycles >= 1 && cycles <= 256) && (scanline >= 0 && scanline < 240)) {
+            int pal = 0, point = 0, pix = 0;
+            if (mask.background) {
+                int mux = 0x8000 >> fineX;
+
+                int low = (shifter.patternLow & mux) > 0 ? 1 : 0;
+                int high = (shifter.patternHigh & mux) > 0 ? 2 : 0;
+                point = high | low;
+
+                low = (shifter.attributeLow & mux) > 0 ? 1 : 0;
+                high = (shifter.attributeHigh & mux) > 0 ? 2 : 0;
+                pal = high | low;
+            }
+
+            if (!mask.grayscale)
+                // Normal color
+                pix = getColor(pal, point);
+            else
+                // Grayscale with emphasis
+                pix = mask.red ? 0xff0000 : mask.green ? 0x00ff00 : mask.blue ? 0x0000ff : 0x000000;
+            frame[(cycles - 1) + (scanline * 256)] = pix;
+        }
         cycles++;
         if (cycles >= 341) {
             cycles = 0;
             scanline++;
-            if (scanline >= 262) {
+            if (scanline >= 261) {
                 _updateSpritesheet(0, 0);
                 _updateSpritesheet(1, 0);
                 complete = true;
@@ -254,7 +256,8 @@ public class Ppu {
     }
 
     public int getColor(int pal, int point) {
-        return palette[read(0x3f00 + (pal << 2) + point) & 0x3f];
+        // return palette[read(0x3f00 + (pal << 2) + point) & 0x3f];
+        return palette[paletteTable[(pal << 2) + point]];
     }
 
     /* --------------------------------- Ppu I/O -------------------------------- */
@@ -294,6 +297,8 @@ public class Ppu {
             tmp = paletteTable[addr] & (mask.grayscale ? 0x30 : 0x3f);
         }
 
+        // _createLog(addr, tmp, true);
+
         return tmp & 0xff;
     }
 
@@ -326,6 +331,7 @@ public class Ppu {
             }
             paletteTable[addr & 0x3f] = data;
         }
+        // _createLog(addr, data, false);
     }
     /* ------------------------------ PPU Registers ----------------------------- */
 
@@ -444,7 +450,6 @@ public class Ppu {
                 if (vramAddr.coarseX == 31) {
                     vramAddr.coarseX = 0;
                     vramAddr.select ^= 1; // Switch horizontal nametable
-                    return;
                 } else
                     vramAddr.coarseX += 1;
             } else {
@@ -454,13 +459,18 @@ public class Ppu {
                     vramAddr.fineY = 0;
                     if (vramAddr.coarseY == 29) {
                         vramAddr.coarseY = 0;
-                        vramAddr.select ^= 0x2;
-                    } else if (vramAddr.coarseY == 31)
-                        vramAddr.coarseY = 0;
+                        vramAddr.select ^= 2;
+                    }
+                    else if (vramAddr.coarseY == 31)
+                    vramAddr.coarseY = 0;
                     else
                         vramAddr.coarseY += 1;
                 }
             }
+        }
+
+        public void increment(boolean b) {
+            set(get() + (b ? 32 : 1));
         }
     }
 
@@ -499,7 +509,9 @@ public class Ppu {
     // Represents the 2 16-bit shift registers and
     // 2 8-bit shift registers (palette attribute for next tile)
     private final class ShiftRegister {
+        // Attribute and pattern for current tile
         int attributeLow, attributeHigh, patternLow, patternHigh;
+        // Attribute and pattern for next tile
         int tile, attribute, low, high;
 
         ShiftRegister() {
@@ -530,13 +542,10 @@ public class Ppu {
 
         public void update() {
             // Background rendering
-            if (mask.background) {
-                patternLow <<= 1;
-                patternHigh <<= 1;
-
-                attributeLow <<= 1;
-                attributeHigh <<= 1;
-            }
+            patternLow = (patternLow << 1) & 0xffff;
+            patternHigh = (patternHigh << 1) & 0xffff;
+            attributeLow = (attributeLow << 1) & 0xffff;
+            attributeHigh = (attributeHigh << 1) & 0xffff;
         }
     }
 
