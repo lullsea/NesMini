@@ -32,7 +32,6 @@ public class NesFrame extends JFrame {
             }
         });
 
-
         debugMenu.add(pal);
         debugMenu.add(mem);
 
@@ -46,7 +45,6 @@ public class NesFrame extends JFrame {
         setLayout(null);
         setResizable(false);
         getContentPane().setBackground(Color.black);
-
         
         setJMenuBar(menuBar);
         add(graphic);

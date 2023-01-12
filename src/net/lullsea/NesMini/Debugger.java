@@ -41,6 +41,7 @@ public class Debugger extends JFrame {
 
     private final int x = 50, y = 40;
 
+    // Sprite sheet and current palette table
     private void _pattern() {
         int size = 350;
         Color shadow = new Color(0x501010);
@@ -95,6 +96,7 @@ public class Debugger extends JFrame {
         setSize((size * 2) + 130, 600);
     }
 
+    // Memory map for cpu and ppu
     private void _memory() {
         Font F = new Font(Font.MONOSPACED, Font.PLAIN, 14);
         setTitle("Memory Viewer");

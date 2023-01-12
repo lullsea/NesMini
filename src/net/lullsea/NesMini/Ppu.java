@@ -19,14 +19,23 @@ public class Ppu {
             0xFFF2BE, 0xF8B8B8, 0xF8B8D8, 0xFFB6FF, 0xFFC3FF, 0xC7D1FF, 0x9ADAFF, 0x88EDF8, 0x83FFDD, 0xB8F8B8,
             0xF5F8AC, 0xFFFFB0, 0xF8D8F8, 0x000000, 0x000000 };
 
+    // Modifiable table containing current palette (sprite and background)
     int[] paletteTable;
 
-    // left: $0 - $fff; right: $1000 - $1fff
+    /* 
+     * Sprites for background and foreground
+     * left: $0 - $fff; right: $1000 - $1fff 
+     */
     int[][] patternTable;
+
+    // Table referencing the layout of the backgrounds
     Nametable[] nametable;
-    int[] arr;
+    // Nametable mirroring arrangement
+    int[] nArr;
+    
     Mirror mirror;
 
+    // Temporary value that is used by CPU reads and writes
     public int buffer;
 
     // Rendering Variables
@@ -46,29 +55,34 @@ public class Ppu {
     public int[][] _current;
     public String _debug;
 
-    int[] frame; // Rendered image
+    // Currently rendered image
+    int[] frame; 
 
     public Ppu(Nes nes) {
         this.nes = nes;
+    }
+
+    // Resets the nes PPU (clear ram, reset tables)
+    public void reset() {
         control = new PPUCTRL();
         mask = new PPUMASK();
         status = new PPUSTATUS();
 
         paletteTable = new int[32];
 
-        nametable = new Nametable[4];
+        nametable = new Nametable[mirror != Mirror.FOUR_SCREEN ? 2 : 4];
         // Arrays.fill(nametable, new Nametable());
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < nametable.length; i++)
             nametable[i] = new Nametable();
 
         mirror = nes.rom.mirror;
 
         // Nametable mirroring
         switch (mirror) {
-            case HORIZONTAL -> arr = new int[] { 0, 0, 1, 1 };
-            case VERTICAL -> arr = new int[] { 0, 1, 0, 1 };
-            case SINGLE -> arr = new int[] { 0, 0, 0, 0 };
-            case FOUR_SCREEN -> arr = new int[] { 0, 1, 2, 3 };
+            case HORIZONTAL -> nArr = new int[] { 0, 0, 1, 1 };
+            case VERTICAL -> nArr = new int[] { 0, 1, 0, 1 };
+            case SINGLE -> nArr = new int[] { 0, 0, 0, 0 };
+            case FOUR_SCREEN -> nArr = new int[] { 0, 1, 2, 3 };
             case UNLOADED -> {
                 break;
             }
@@ -89,9 +103,10 @@ public class Ppu {
         firstwrite = false;
     }
 
-    public void process() {
 
-        /* ---------------------------- Visible scanlines --------------------------- */
+    // Render the current frame
+    public void process() {
+        // Visible scanlines
         if (scanline >= -1 && scanline < 240) {
 
             // Clear vblank flag
@@ -101,18 +116,16 @@ public class Ppu {
             if (scanline == 0 && cycles == 0)
                 cycles = 1;
 
-            // At the beginning of each scanline, the data for the first two tiles is
-            // already loaded into the shift registers
+            // The data for the first two tiles is loaded into the shift registers
+            if (mask.background)
+                shifter.update();
+
             // Idle cycle
             // if(cycles == 0)
 
             // The data for each tile is fetched during this phase
             // Every memory access takes 2 cycles to complete
             if ((cycles >= 2 && cycles < 258) || (cycles >= 321 && cycles < 338)) {
-
-                if (mask.background)
-                    shifter.update();
-
                 switch ((cycles - 1) % 8) {
                     // Nametable byte
                     case 0:
@@ -169,7 +182,7 @@ public class Ppu {
             if (cycles == 338 || cycles == 340)
                 shifter.tile = read(0x2800 | (vramAddr.get() & 0xfff));
 
-            /* -------------------------- Pre render scanlines -------------------------- */
+            // Pre-Render scanline
             if ((scanline == -1) && (cycles >= 280 && cycles <= 304))
                 // the vertical scroll bits are reloaded if rendering is enabled.
                 if (mask.background || mask.sprite) {
@@ -187,7 +200,7 @@ public class Ppu {
                 nes.cpu.requestInterrupt = 2; // Ask the cpu to perform NMI
         }
 
-        /* ---------------------------- Background frame ---------------------------- */
+        // Background frame
         if ((cycles >= 1 && cycles <= 256) && (scanline >= 0 && scanline < 240)) {
             int pal = 0, point = 0, pix = 0;
             if (mask.background) {
@@ -206,10 +219,14 @@ public class Ppu {
                 // Normal color
                 pix = getColor(pal, point);
             else
-                // Grayscale with emphasis
+                // Grayscale with color emphasis
                 pix = mask.red ? 0xff0000 : mask.green ? 0x00ff00 : mask.blue ? 0x0000ff : 0x000000;
+
+            // Write to current frame
             frame[(cycles - 1) + (scanline * 256)] = pix;
         }
+
+        // Iterators
         cycles++;
         if (cycles >= 341) {
             cycles = 0;
@@ -223,9 +240,7 @@ public class Ppu {
         }
     }
 
-    public void reset() {
-    }
-
+    // Used for debugging (renders the nes ROM sprite sheet)
     public void _updateSpritesheet(int index, int pal) {
         // The pattern table is divided into two 256-tile sections 16x16
         // Each tile in the pattern table is 16 bytes which are separated to left and
@@ -255,6 +270,7 @@ public class Ppu {
         }
     }
 
+    // Fetch color (3 bytes) from palette using palette RAM
     public int getColor(int pal, int point) {
         // return palette[read(0x3f00 + (pal << 2) + point) & 0x3f];
         return palette[paletteTable[(pal << 2) + point]];
@@ -262,6 +278,7 @@ public class Ppu {
 
     /* --------------------------------- Ppu I/O -------------------------------- */
 
+    // Fetch data from PPU memory
     public int read(int addr) {
         int tmp = 0;
         addr &= 0x3fff;
@@ -275,13 +292,13 @@ public class Ppu {
             addr &= 0xfff;
 
             if (addr <= 0x3ff)
-                tmp = nametable[arr[0]].get(addr);
+                tmp = nametable[nArr[0]].get(addr);
             else if (addr <= 0x7ff)
-                tmp = nametable[arr[1]].get(addr);
+                tmp = nametable[nArr[1]].get(addr);
             else if (addr <= 0xbff)
-                tmp = nametable[arr[2]].get(addr);
+                tmp = nametable[nArr[2]].get(addr);
             else if (addr <= 0xfff)
-                tmp = nametable[arr[3]].get(addr);
+                tmp = nametable[nArr[3]].get(addr);
 
         } else if (addr <= 0x3fff) {
             // Palette indexes
@@ -302,6 +319,7 @@ public class Ppu {
         return tmp & 0xff;
     }
 
+    // Writes to PPU memory
     public void write(int addr, int data) {
         addr &= 0x3fff;
         data &= 0xff;
@@ -313,13 +331,13 @@ public class Ppu {
             addr &= 0xfff;
 
             if (addr <= 0x3ff)
-                nametable[arr[0]].set(addr, data);
+                nametable[nArr[0]].set(addr, data);
             else if (addr <= 0x7ff)
-                nametable[arr[1]].set(addr, data);
+                nametable[nArr[1]].set(addr, data);
             else if (addr <= 0xbff)
-                nametable[arr[2]].set(addr, data);
+                nametable[nArr[2]].set(addr, data);
             else if (addr <= 0xfff)
-                nametable[arr[3]].set(addr, data);
+                nametable[nArr[3]].set(addr, data);
 
         } else if (addr <= 0x3fff) {
             addr &= 0x1f;
@@ -399,7 +417,6 @@ public class Ppu {
             green = (data & 0x40) > 0;
             blue = (data & 0x80) > 0;
         }
-
     }
 
     // Cpu $2002
@@ -460,9 +477,8 @@ public class Ppu {
                     if (vramAddr.coarseY == 29) {
                         vramAddr.coarseY = 0;
                         vramAddr.select ^= 2;
-                    }
-                    else if (vramAddr.coarseY == 31)
-                    vramAddr.coarseY = 0;
+                    }else if(vramAddr.coarseY == 31)
+                        vramAddr.coarseY = 0;
                     else
                         vramAddr.coarseY += 1;
                 }
@@ -473,7 +489,8 @@ public class Ppu {
             set(get() + (b ? 32 : 1));
         }
     }
-
+    
+    // Background layout
     public final class Nametable {
         // Used for debugging
         private static int id = 0;
@@ -530,8 +547,9 @@ public class Ppu {
             this.high = 0;
         }
 
+        // Every 8 cycles/shifts, new data is loaded into these registers.
         public void load() {
-            // Every 8 cycles/shifts, new data is loaded into these registers.
+            // Two bytes representing the low and high byte of the new tile
             patternLow = (patternLow & 0xff00) + (low & 0xff);
             patternHigh = (patternHigh & 0xff00) + (high & 0xff);
 
@@ -540,8 +558,8 @@ public class Ppu {
             attributeHigh = (attributeHigh & 0xff00) + ((attribute & 0b10) > 0 ? 0xff : 0);
         }
 
+        // Update current working tile and attribute
         public void update() {
-            // Background rendering
             patternLow = (patternLow << 1) & 0xffff;
             patternHigh = (patternHigh << 1) & 0xffff;
             attributeLow = (attributeLow << 1) & 0xffff;

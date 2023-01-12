@@ -62,7 +62,7 @@ public class RomLoader {
         // Nes 2.0 Format
         prgCount = isNES2 ? data[4] + ((data[9] & 15) << 8) : data[4];
         chrCount = isNES2 ? data[5] + ((data[9] >> 4) << 8) : data[5];
-        mirror = (data[6] & 8) != 0 ? Mirror.FOUR_SCREEN : (data[6] & 1) != 0 ? Mirror.VERTICAL : Mirror.HORIZONTAL;
+        mirror = (data[6] & 8) != 0 ? Mirror.FOUR_SCREEN : (data[6] & 1) == 0 ? Mirror.HORIZONTAL : Mirror.VERTICAL;
         trainer = (data[6] & 4) != 0;
         // Bottom 4 bits denote mapper number
         mapperID = (data[6] >> 4) + ((data[7] >> 4) << 4);
@@ -89,18 +89,12 @@ public class RomLoader {
         }
     }
 
-    public Mirror getMirror() {
-        return mirror;
-    }
-
+    // Fetch data from CHR ROM (PPU)
     public int readVROM(int addr) {
         return vrom[addr];
     }
 
-    public void writeVROM(int addr, int data) {
-        vrom[addr] = data;
-    }
-
+    // Fetch data from PRG ROM (CPU)
     public int readROM(int addr) {
         return rom[addr & ((prgCount > 1) ? 0x7fff : 0x3fff)];
     }
@@ -111,7 +105,7 @@ public class RomLoader {
                 "Nes 2.0: " + isNES2 + "\n" +
                 "rSize: " + prgCount + " * 16kb" + "\n" +
                 "vSize: " + chrCount + " * 8kb" + "\n" +
-                "Mirroring: " + getMirror().toString() + "\n" +
+                "Mirroring: " + mirror.toString() + "\n" +
                 "battery: " + battery + "\n" +
                 "trainer: " + trainer + "\n" +
                 "MapperID: " + mapperID + "\n" +

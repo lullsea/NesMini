@@ -6,7 +6,7 @@ public class Main {
     int test[] = {1, 2, 3, 4};
     public static void main(String[] args) throws Exception {
         Nes nes = new Nes();
-        nes.load("C:/Users/user/downloads/nestest.nes");
+        nes.load("C:/Users/user/downloads/smb.nes");
         while (true) {
             while (!nes.ppu.complete)
                 nes.process();

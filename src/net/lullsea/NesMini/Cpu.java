@@ -59,6 +59,7 @@ public class Cpu {
         this.nes = nes;
     }
 
+    // Reset the nes CPU (clear memory, reset vectors)
     public void reset() {
         // Define register startup values
         status = 0x34;
@@ -86,9 +87,9 @@ public class Cpu {
 
         cycles = 0;
         requestInterrupt = 0;
-
     }
 
+    // Perform current instruction
     public void process() {
         switch (requestInterrupt) {
             case 1 -> irq();
@@ -113,6 +114,7 @@ public class Cpu {
         cycles--;
     }
 
+    // Parse the addressing mode of the current instruction
     public void parseAddressingMode(AddressingMode mode) {
         // Increment PC everytime it's read
         // Increment PC twice if it reads a word
@@ -189,6 +191,7 @@ public class Cpu {
 
     /* --------------------------------- Cpu I/O -------------------------------- */
 
+    // Fetch a byte from memory
     public int read(int addr) {
         int val = 0;
         // $0800 - $1fff: Mirrors of $0000-$07FF
@@ -200,10 +203,12 @@ public class Cpu {
         return val & 0xff;
     }
 
+    // Fetch a word from memory
     public int readWord(int addr) {
         return read(addr) | (read(addr + 1) << 8);
     }
 
+    // Writes a byte to memory
     public void write(int addr, int data) {
         data &= 0xff;
         if (addr <= 0x1fff)
@@ -220,6 +225,7 @@ public class Cpu {
         ptr &= 0xff;
     }
 
+    // Fetch from the 256-byte array (stack)
     public int popStack() {
         ptr = (ptr + 1) & 0xff;
         return read(0x100 | ptr);
@@ -237,24 +243,29 @@ public class Cpu {
 
     /* -------------------------- StatusFlag functions -------------------------- */
 
+    // Clear or set a flag (bit) on the status regsiter
     private void setFlag(StatusFlag flag, boolean b) {
         status = b ? status | flag.bit : status & ~flag.bit;
     }
 
+    // Fetch the value of a flag (bit) on the status regsiter
     private boolean getFlag(StatusFlag flag) {
         return (status & flag.bit) != 0;
     }
 
+    // Same as getFlag() but returns a 1 or 0 instead of a boolean
     private int getFlagBit(StatusFlag flag) {
         return bi(getFlag(flag));
     }
 
+    // Fetch the status register
     public int getStatus() {
         return status & 0xff;
     }
 
     /* ------------------------------- Interrupts ------------------------------- */
 
+    // Cpu interrupt
     private void irq() {
         // If InterruptDisable flag is false
         if (!getFlag(StatusFlag.INTERRUPT)) {
@@ -278,6 +289,7 @@ public class Cpu {
         }
     }
 
+    // Non-maskable interrupt
     private void nmi() {
         // Push PC to stack
         pushStack((pc >> 8) & 0xFF);
@@ -299,6 +311,7 @@ public class Cpu {
 
     /* ------------------ Addressing Modes, Cycles and opcodes ------------------ */
 
+    // Lookup the current opcodes Addressing Mode and Cycles required
     final Object[][] lookup = {
             { AddressingMode.IMMEDIATE, 7 }, { AddressingMode.INDEXED_INDIRECT, 6 }, { AddressingMode.IMPLIED, 2 },
             { AddressingMode.IMPLIED, 8 }, { AddressingMode.IMPLIED, 3 }, { AddressingMode.ZERO_PAGE, 3 },
@@ -398,6 +411,7 @@ public class Cpu {
             { AddressingMode.IMPLIED, 7 }
     }; // Typing this out gave me carpal tunnel
 
+    // Parse the current opcode and execute the instruction
     private void parseInstruction(int op) {
         switch (op) {
             case 0x61, 0x65, 0x69, 0x6d, 0x75, 0x79, 0x7d, 0x71 -> adc();

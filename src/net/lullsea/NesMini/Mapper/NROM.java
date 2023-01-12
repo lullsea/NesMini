@@ -105,7 +105,8 @@ public class NROM extends Mapper {
                     // The second write contains Y offset
                     // tram_addr: ....... ...ABCDE <- data: ABCDE...
                     // fineX: FGH <- d: .....FGH
-                    nes.ppu.tramAddr.fineY = data & 0x7;
+                    // nes.ppu.tramAddr.fineY = data & 0x7;
+                    nes.ppu.fineX = data & 0x7;
                     nes.ppu.tramAddr.coarseY = data >> 3;
                 } else {
                     // The first write contains X offset
