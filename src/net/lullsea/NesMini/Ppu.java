@@ -22,9 +22,9 @@ public class Ppu {
     // Modifiable table containing current palette (sprite and background)
     int[] paletteTable;
 
-    /* 
+    /*
      * Sprites for background and foreground
-     * left: $0 - $fff; right: $1000 - $1fff 
+     * left: $0 - $fff; right: $1000 - $1fff
      */
     int[][] patternTable;
 
@@ -32,7 +32,7 @@ public class Ppu {
     Nametable[] nametable;
     // Nametable mirroring arrangement
     int[] nArr;
-    
+
     Mirror mirror;
 
     // Temporary value that is used by CPU reads and writes
@@ -56,7 +56,7 @@ public class Ppu {
     public String _debug;
 
     // Currently rendered image
-    int[] frame; 
+    int[] frame;
 
     public Ppu(Nes nes) {
         this.nes = nes;
@@ -101,32 +101,22 @@ public class Ppu {
         buffer = 0;
         complete = false;
         firstwrite = false;
-    }
 
+    }
 
     // Render the current frame
     public void process() {
+        // Clear vblank flag
+
         // Visible scanlines
-        if (scanline >= -1 && scanline < 240) {
+        if (scanline >= 21 && scanline < 261) {
+            if ((cycles >= 0 && cycles < 256)) {
+                // The data for each tile is fetched during this phase
+                // Every memory access takes 2 cycles to complete
 
-            // Clear vblank flag
-            if (scanline == -1 && cycles == 1)
-                status.vblank = false;
-
-            if (scanline == 0 && cycles == 0)
-                cycles = 1;
-
-            // The data for the first two tiles is loaded into the shift registers
-            if (mask.background)
-                shifter.update();
-
-            // Idle cycle
-            // if(cycles == 0)
-
-            // The data for each tile is fetched during this phase
-            // Every memory access takes 2 cycles to complete
-            if ((cycles >= 2 && cycles < 258) || (cycles >= 321 && cycles < 338)) {
-                switch ((cycles - 1) % 8) {
+                if (mask.background)
+                    shifter.update();
+                switch (cycles % 8) {
                     // Nametable byte
                     case 0:
                         shifter.load();
@@ -163,7 +153,6 @@ public class Ppu {
                         break;
                 }
             }
-
             // End of visible scanline
             if (cycles == 256)
                 if (mask.background || mask.sprite)
@@ -180,28 +169,13 @@ public class Ppu {
             }
 
             if (cycles == 338 || cycles == 340)
-                shifter.tile = read(0x2800 | (vramAddr.get() & 0xfff));
+                shifter.tile = read(0x2000 | (vramAddr.get() & 0xfff));
 
             // Pre-Render scanline
-            if ((scanline == -1) && (cycles >= 280 && cycles <= 304))
-                // the vertical scroll bits are reloaded if rendering is enabled.
-                if (mask.background || mask.sprite) {
-                    vramAddr.coarseY = tramAddr.coarseY;
-                    vramAddr.select = (tramAddr.select & 0b10) | (vramAddr.select & 1);
-                    vramAddr.fineY = tramAddr.fineY;
-                }
-
-        }
-
-        // End of the frame
-        if (scanline == 241 && cycles == 1) {
-            status.vblank = true;
-            if (control.nmi)
-                nes.cpu.requestInterrupt = 2; // Ask the cpu to perform NMI
         }
 
         // Background frame
-        if ((cycles >= 1 && cycles <= 256) && (scanline >= 0 && scanline < 240)) {
+        if ((cycles >= 0 && cycles < 256) && (scanline >= 21 && scanline <= 260)) {
             int pal = 0, point = 0, pix = 0;
             if (mask.background) {
                 int mux = 0x8000 >> fineX;
@@ -223,19 +197,30 @@ public class Ppu {
                 pix = mask.red ? 0xff0000 : mask.green ? 0x00ff00 : mask.blue ? 0x0000ff : 0x000000;
 
             // Write to current frame
-            frame[(cycles - 1) + (scanline * 256)] = pix;
+            frame[cycles + ((scanline - 21) * 256)] = pix;
         }
 
-        // Iterators
         cycles++;
+        // End scanline
         if (cycles >= 341) {
             cycles = 0;
             scanline++;
-            if (scanline >= 261) {
+            // Start of visible scanlines
+            if (scanline == 20) {
+                status.vblank = false;
+                if (mask.background || mask.sprite)
+                    vramAddr.set(tramAddr.get());
+            }
+            // End of frame
+            if (scanline == 261) {
                 _updateSpritesheet(0, 0);
                 _updateSpritesheet(1, 0);
                 complete = true;
                 scanline = -1;
+
+                status.vblank = true;
+                if (control.nmi)
+                    nes.cpu.requestInterrupt = 2; // Ask the cpu to perform NMI
             }
         }
     }
@@ -282,7 +267,6 @@ public class Ppu {
     public int read(int addr) {
         int tmp = 0;
         addr &= 0x3fff;
-
         // $0 - $1fff, Video ROM / Pattern Table
         if (addr <= 0x1fff)
             tmp = nes.mapper.readVROM(addr);
@@ -477,7 +461,7 @@ public class Ppu {
                     if (vramAddr.coarseY == 29) {
                         vramAddr.coarseY = 0;
                         vramAddr.select ^= 2;
-                    }else if(vramAddr.coarseY == 31)
+                    } else if (vramAddr.coarseY == 31)
                         vramAddr.coarseY = 0;
                     else
                         vramAddr.coarseY += 1;
@@ -489,7 +473,7 @@ public class Ppu {
             set(get() + (b ? 32 : 1));
         }
     }
-    
+
     // Background layout
     public final class Nametable {
         // Used for debugging
@@ -523,7 +507,7 @@ public class Ppu {
         }
     }
 
-    // Represents the 2 16-bit shift registers and
+    // Reeresents the 2 16-bit shift registers and
     // 2 8-bit shift registers (palette attribute for next tile)
     private final class ShiftRegister {
         // Attribute and pattern for current tile

@@ -82,8 +82,8 @@ public class NROM extends Mapper {
         switch (addr) {
             case 0x0:
                 nes.ppu.control.set(data);
-                // TODO: fix forced condition
-                if (nes.ppu.tramAddr.get() < 0x3f00)
+                // // TODO: fix forced condition
+                if (nes.ppu.vramAddr.get() <= 0x3eff)
                     nes.ppu.tramAddr.select = data & 3;
                 break;
             case 0x1:
@@ -100,13 +100,13 @@ public class NROM extends Mapper {
                 break;
             case 0x5:
                 // This register is written to twice
-                // TODO
+                // TOD
                 if (nes.ppu.firstwrite) {
                     // The second write contains Y offset
                     // tram_addr: ....... ...ABCDE <- data: ABCDE...
                     // fineX: FGH <- d: .....FGH
                     // nes.ppu.tramAddr.fineY = data & 0x7;
-                    nes.ppu.fineX = data & 0x7;
+                    nes.ppu.tramAddr.fineY = data & 0x7;
                     nes.ppu.tramAddr.coarseY = data >> 3;
                 } else {
                     // The first write contains X offset
@@ -129,7 +129,7 @@ public class NROM extends Mapper {
                 } else {
                     // The first write to this register latches the high byte to the address
                     // tram_addr: .CDEFGH ........ <- data: ..CDEFGH
-                    nes.ppu.tramAddr.set(((data & 0x3f) << 8) | (nes.ppu.tramAddr.get() & 0xff));
+                    nes.ppu.tramAddr.set(((data& 0x3f) << 8) | (nes.ppu.tramAddr.get() & 0xff));
                 }
                 nes.ppu.firstwrite = !nes.ppu.firstwrite;
                 break;

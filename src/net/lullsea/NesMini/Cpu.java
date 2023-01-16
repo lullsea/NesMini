@@ -1,5 +1,7 @@
 package net.lullsea.NesMini;
 
+import java.io.FileWriter;
+
 enum StatusFlag {
     CARRY(1 << 0),
     ZERO(1 << 1),
@@ -55,8 +57,13 @@ public class Cpu {
 
     public int requestInterrupt;
 
+    FileWriter file;
+
     Cpu(Nes nes) {
         this.nes = nes;
+        try{
+        file = new FileWriter("test.txt");
+        }catch(Exception e){}
     }
 
     // Reset the nes CPU (clear memory, reset vectors)
@@ -100,6 +107,7 @@ public class Cpu {
         if (cycles == 0) {
             opcode = read(pc++);
 
+
             setFlag(StatusFlag.UNUSED, true);
 
             mode = (AddressingMode) lookup[opcode][0];
@@ -108,6 +116,10 @@ public class Cpu {
             // 6th bit of the status flag always set to true
             setFlag(StatusFlag.UNUSED, true);
             parseAddressingMode(mode);
+
+            try{
+                file.write("addr: " + Integer.toHexString(addr) + " op: " + Integer.toHexString(opcode) + " C: " + getFlagBit(StatusFlag.CARRY) + "\n");
+            }catch(Exception e){}
 
             parseInstruction(opcode);
         }
@@ -513,7 +525,7 @@ public class Cpu {
             j <<= 1;
             write(addr, j);
         }
-        setFlag(StatusFlag.ZERO, j == 0);
+        setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
     }
 
@@ -605,7 +617,7 @@ public class Cpu {
 
         int j = a - read(addr);
 
-        setFlag(StatusFlag.CARRY, a >= 0);
+        setFlag(StatusFlag.CARRY, j >= 0);
         setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
     }
@@ -613,7 +625,7 @@ public class Cpu {
     private void cpx() {
         int j = x - read(addr);
 
-        setFlag(StatusFlag.CARRY, x >= 0);
+        setFlag(StatusFlag.CARRY, j >= 0);
         setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
     }
@@ -621,7 +633,7 @@ public class Cpu {
     private void cpy() {
         int j = y - read(addr);
 
-        setFlag(StatusFlag.CARRY, y >= 0);
+        setFlag(StatusFlag.CARRY, j >= 0);
         setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
     }
@@ -646,7 +658,7 @@ public class Cpu {
     }
 
     private void eor() {
-        a = (a ^ read(addr)) & 0xff;
+        a = (read(addr) ^ a) & 0xff;
         setFlag(StatusFlag.ZERO, a == 0);
         setFlag(StatusFlag.NEGATIVE, ib(a & 0x80));
     }
@@ -787,15 +799,18 @@ public class Cpu {
 
     private void rti() {
         status = popStack();
-        setFlag(StatusFlag.BREAK, false);
-        setFlag(StatusFlag.UNUSED, false);
         pc = popStack();
         pc |= popStack() << 8;
+
+        setFlag(StatusFlag.BREAK, true);
+        setFlag(StatusFlag.UNUSED, true);
+
+        pc--;
     }
 
     private void rts() {
         pc = popStack();
-        pc += popStack() << 8;
+        pc |= popStack() << 8;
 
         pc++;
     }
@@ -807,7 +822,7 @@ public class Cpu {
         setFlag(StatusFlag.OVERFLOW, ib((j ^ a) & (j ^ j) & 0x80));
         setFlag(StatusFlag.NEGATIVE, ib(j & 0x80));
         setFlag(StatusFlag.CARRY, j >= 0);
-        setFlag(StatusFlag.ZERO, j == 0);
+        setFlag(StatusFlag.ZERO, (j & 0xff) == 0);
         a = j & 0xff;
     }
 
@@ -848,7 +863,7 @@ public class Cpu {
     }
 
     private void tsx() {
-        x = ptr & 0xff;
+        x = (ptr - 0x100) & 0xff;
         setFlag(StatusFlag.ZERO, x == 0);
         setFlag(StatusFlag.NEGATIVE, ib(x & 0x80));
     }
@@ -860,7 +875,7 @@ public class Cpu {
     }
 
     private void txs() {
-        ptr = x & 0xff;
+        ptr = (x + 0x100) & 0xff;
     }
 
     private void tya() {
